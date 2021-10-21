@@ -120,7 +120,7 @@ func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Confi
 			point2pointipam.NewServer(ipnet),
 			recvfd.NewServer(),
 			mechanisms.NewServer(map[string]networkservice.NetworkServiceServer{
-				kernelmech.MECHANISM: kernel.NewServer(kernel.WithInterfaceName(config.Name)),
+				kernelmech.MECHANISM: kernel.NewServer(kernel.WithInterfaceName(limitName(config.Name))),
 			}),
 			sriovTokenVlanServer,
 			ifConfigServer,
@@ -129,6 +129,13 @@ func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Confi
 		),
 	)
 	return responderEndpoint, ifConfigServer
+}
+
+func limitName(name string) string {
+	if len(name) > kernelmech.LinuxIfMaxLength {
+		return name[:kernelmech.LinuxIfMaxLength]
+	}
+	return name
 }
 
 func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint endpoint.Endpoint) *grpc.Server {
