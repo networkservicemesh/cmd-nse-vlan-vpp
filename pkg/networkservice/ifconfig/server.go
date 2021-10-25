@@ -21,9 +21,7 @@ package ifconfig
 
 import (
 	"context"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/vishvananda/netlink"
@@ -92,32 +90,73 @@ func (i *ifConfigServer) handleIfOp() {
 		select {
 		case <-i.stop:
 			return
-		case ifOp := <-i.ifOps:
-			switch ifOp.OpCode {
+		case ifOpObj := <-i.ifOps:
+			switch ifOpObj.OpCode {
 			case add:
-				logger := log.FromContext(ifOp.ctx).WithField("handleIfOp", add)
-				for {
-					select {
-					case <-i.stop:
-						return
-					default:
-						parentIf, err := netlink.LinkByName(i.parentIfName)
-						if err != nil {
-							if strings.Contains(err.Error(), "Link not found") {
-								time.Sleep(1 * time.Second)
-								continue
-							}
-							logger.Errorf("failed to get link for %q - %v", i.parentIfName, err)
-							return
-						}
-						logger.Infof("parent interface %v: connection %v", parentIf, ifOp.conn.String())
-						// TODO: add vlan sub interface on the vpp and configure ip, route etc.
-					}
-					break
+				logger := log.FromContext(ifOpObj.ctx).WithField("handleIfOp", add)
+				shouldReturn := i.handleIfOpAdd(logger, ifOpObj)
+				if shouldReturn {
+					return
 				}
 			case delete:
 				// TODO: delete vlan sub interface from vpp instance
 			}
 		}
 	}
+}
+
+func (i *ifConfigServer) handleIfOpAdd(logger log.Logger, ifOpObj ifOp) bool {
+	for {
+		select {
+		case <-i.stop:
+			return true
+		default:
+			done := make(chan struct{})
+			linkUpdateCh := make(chan netlink.LinkUpdate)
+			if err := netlink.LinkSubscribe(linkUpdateCh, done); err != nil {
+				logger.Errorf("failed to subscribe interface update for %s", i.parentIfName)
+				close(done)
+				close(linkUpdateCh)
+				return true
+			}
+			// find the link again to avoid the race
+			parentIf, err := netlink.LinkByName(i.parentIfName)
+			if err != nil {
+				select {
+				case <-i.stop:
+					i.closeLinkSubscribe(done, linkUpdateCh)
+					return true
+				case linkUpdateEvent, ok := <-linkUpdateCh:
+					i.closeLinkSubscribe(done, linkUpdateCh)
+					if !ok {
+						logger.Errorf("failed to receive interface update for %s", i.parentIfName)
+						return true
+					}
+					if linkUpdateEvent.Link.Attrs().Name != i.parentIfName {
+						logger.Infof("interface update received for: %s", linkUpdateEvent.Link.Attrs().Name)
+						continue
+					}
+					parentIf, err = netlink.LinkByName(i.parentIfName)
+					if err != nil {
+						continue
+					}
+				}
+			} else {
+				i.closeLinkSubscribe(done, linkUpdateCh)
+			}
+			logger.Infof("parent interface %v: connection %v", parentIf, ifOpObj.conn.String())
+			// TODO: add vlan sub interface on the vpp and configure ip, route etc.
+		}
+		break
+	}
+	return false
+}
+
+func (i *ifConfigServer) closeLinkSubscribe(done chan struct{}, linkUpdateCh chan netlink.LinkUpdate) {
+	close(done)
+	// `linkUpdateCh` should be fully read after the `done` close to prevent goroutine leak in `netlink.LinkSubscribe`
+	go func() {
+		for range linkUpdateCh {
+		}
+	}()
 }
