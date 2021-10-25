@@ -15,11 +15,15 @@
 // limitations under the License.
 
 // +build linux
+// #nosec
 
 package main
 
 import (
 	"context"
+	"crypto/md5"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/url"
@@ -67,6 +71,10 @@ import (
 	"github.com/networkservicemesh/sdk/pkg/tools/spiffejwt"
 
 	"github.com/networkservicemesh/cmd-nse-vlan-vpp/pkg/networkservice/ifconfig"
+)
+
+const (
+	parentIfPrefix = "nse"
 )
 
 // Config holds configuration parameters from environment variables
@@ -120,7 +128,7 @@ func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Confi
 			point2pointipam.NewServer(ipnet),
 			recvfd.NewServer(),
 			mechanisms.NewServer(map[string]networkservice.NetworkServiceServer{
-				kernelmech.MECHANISM: kernel.NewServer(kernel.WithInterfaceName(limitName(config.Name))),
+				kernelmech.MECHANISM: kernel.NewServer(kernel.WithInterfaceName(getParentIfname(config.Name))),
 			}),
 			sriovTokenVlanServer,
 			ifConfigServer,
@@ -131,11 +139,14 @@ func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Confi
 	return responderEndpoint, ifConfigServer
 }
 
-func limitName(name string) string {
-	if len(name) > kernelmech.LinuxIfMaxLength {
-		return name[:kernelmech.LinuxIfMaxLength]
+func getParentIfname(nseName string) string {
+	h := md5.New()
+	_, err := io.WriteString(h, nseName)
+	if err != nil {
+		logrus.Fatalf("error generating parent interface name %+v", err)
 	}
-	return name
+	nif := fmt.Sprintf("%s%x", parentIfPrefix, h.Sum(nil))
+	return nif[:kernelmech.LinuxIfMaxLength]
 }
 
 func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint endpoint.Endpoint) *grpc.Server {
