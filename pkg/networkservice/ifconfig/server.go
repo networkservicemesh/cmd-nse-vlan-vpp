@@ -23,17 +23,23 @@ import (
 	"context"
 	"sync"
 
+	"github.com/edwarnicke/govpp/binapi/af_packet"
+	interfaces "github.com/edwarnicke/govpp/binapi/interface"
+	"github.com/edwarnicke/govpp/binapi/interface_types"
+	"github.com/edwarnicke/vpphelper"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/pkg/errors"
 	"github.com/vishvananda/netlink"
 
 	"github.com/networkservicemesh/api/pkg/api/networkservice"
+	"github.com/networkservicemesh/api/pkg/api/networkservice/mechanisms/kernel"
 	"github.com/networkservicemesh/sdk/pkg/networkservice/core/next"
 	"github.com/networkservicemesh/sdk/pkg/tools/log"
 )
 
 const (
 	add     = 0
-	delete  = 1
+	remove  = 1
 	bufSize = 500
 )
 
@@ -44,10 +50,15 @@ type ifOp struct {
 }
 
 type ifConfigServer struct {
-	stopWg       sync.WaitGroup
-	ifOps        chan ifOp
-	stop         chan interface{}
-	parentIfName string
+	stopWg          sync.WaitGroup
+	ifOps           chan ifOp
+	stop            chan interface{}
+	parentIfName    string
+	swIfIndex       interface_types.InterfaceIndex
+	vppConn         vpphelper.Connection
+	clientsRefCount int
+	connections     map[string]interface{}
+	mutex           sync.Mutex
 }
 
 // Server network service server with stop method
@@ -57,9 +68,9 @@ type Server interface {
 }
 
 // NewServer creates new ifconfig server instance
-func NewServer(parentIfName string) Server {
+func NewServer(parentIfName string, vppConn vpphelper.Connection) Server {
 	ifServer := &ifConfigServer{parentIfName: parentIfName, ifOps: make(chan ifOp, bufSize),
-		stop: make(chan interface{})}
+		stop: make(chan interface{}), vppConn: vppConn}
 	ifServer.stopWg.Add(1)
 	go func() {
 		defer ifServer.stopWg.Done()
@@ -69,14 +80,35 @@ func NewServer(parentIfName string) Server {
 }
 
 func (i *ifConfigServer) Request(ctx context.Context, request *networkservice.NetworkServiceRequest) (*networkservice.Connection, error) {
-	//  TODO: perform is established check before writing ifOp into channel
-	i.ifOps <- ifOp{ctx, request.GetConnection(), add}
+	mechanism := kernel.ToMechanism(request.GetConnection().GetMechanism())
+	if mechanism != nil && mechanism.GetVLAN() > 0 {
+		i.mutex.Lock()
+		connectionID := request.GetConnection().GetId()
+		if _, exists := i.connections[connectionID]; exists {
+			i.mutex.Unlock()
+			return next.Server(ctx).Request(ctx, request)
+		}
+		i.connections[connectionID] = nil
+		i.mutex.Unlock()
+
+		i.ifOps <- ifOp{ctx, request.GetConnection(), add}
+	}
 	return next.Server(ctx).Request(ctx, request)
 }
 
 func (i *ifConfigServer) Close(ctx context.Context, conn *networkservice.Connection) (*empty.Empty, error) {
-	// TODO: add conditional check
-	i.ifOps <- ifOp{ctx, conn, delete}
+	mechanism := kernel.ToMechanism(conn.GetMechanism())
+	if mechanism != nil && mechanism.GetVLAN() > 0 {
+		i.mutex.Lock()
+		connectionID := conn.GetId()
+		if _, exists := i.connections[connectionID]; !exists {
+			i.mutex.Unlock()
+			return next.Server(ctx).Close(ctx, conn)
+		}
+		delete(i.connections, connectionID)
+		i.mutex.Unlock()
+		i.ifOps <- ifOp{ctx, conn, remove}
+	}
 	return next.Server(ctx).Close(ctx, conn)
 }
 
@@ -94,18 +126,23 @@ func (i *ifConfigServer) handleIfOp() {
 			switch ifOpObj.OpCode {
 			case add:
 				logger := log.FromContext(ifOpObj.ctx).WithField("handleIfOp", add)
-				shouldReturn := i.handleIfOpAdd(logger, ifOpObj)
+				shouldReturn := i.handleIfOpAdd(ifOpObj.ctx, logger, ifOpObj)
 				if shouldReturn {
 					return
 				}
-			case delete:
+			case remove:
+				logger := log.FromContext(ifOpObj.ctx).WithField("handleIfOp", remove)
+				err := i.addDeleteVppParentIf(ifOpObj.ctx, ifOpObj.conn, false)
+				if err != nil {
+					logger.Errorf("error handling parent interface on vpp: %v", err)
+				}
 				// TODO: delete vlan sub interface from vpp instance
 			}
 		}
 	}
 }
 
-func (i *ifConfigServer) handleIfOpAdd(logger log.Logger, ifOpObj ifOp) bool {
+func (i *ifConfigServer) handleIfOpAdd(ctx context.Context, logger log.Logger, ifOpObj ifOp) bool {
 	for {
 		select {
 		case <-i.stop:
@@ -140,9 +177,19 @@ func (i *ifConfigServer) handleIfOpAdd(logger log.Logger, ifOpObj ifOp) bool {
 					if err != nil {
 						continue
 					}
+					err = i.addDeleteVppParentIf(ctx, ifOpObj.conn, true)
+					if err != nil {
+						logger.Errorf("error processing parent interface on vpp: %v", err)
+						return false
+					}
 				}
 			} else {
 				i.closeLinkSubscribe(done, linkUpdateCh)
+				err = i.addDeleteVppParentIf(ctx, ifOpObj.conn, true)
+				if err != nil {
+					logger.Errorf("error handling parent interface on vpp: %v", err)
+					return false
+				}
 			}
 			logger.Infof("parent interface %v: connection %v", parentIf, ifOpObj.conn.String())
 			// TODO: add vlan sub interface on the vpp and configure ip, route etc.
@@ -150,6 +197,55 @@ func (i *ifConfigServer) handleIfOpAdd(logger log.Logger, ifOpObj ifOp) bool {
 		break
 	}
 	return false
+}
+
+func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, conn *networkservice.Connection, isAdd bool) error {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+	if isAdd {
+		i.clientsRefCount++
+		if i.clientsRefCount > 1 {
+			return nil
+		}
+		// TODO: revisit this to support RDMA config on the parent interface
+		if kernel.ToMechanism(conn.GetMechanism()).GetDeviceTokenID() != "" {
+			return errors.Errorf("only raw socket config supported on parent kernel interface %v", conn)
+		}
+		// create parent interface on vpp when first ns client shows up
+		rsp, err := af_packet.NewServiceClient(i.vppConn).AfPacketCreate(ctx, &af_packet.AfPacketCreate{
+			HostIfName:      i.parentIfName,
+			UseRandomHwAddr: true,
+		})
+		if err != nil {
+			return err
+		}
+		if _, err := interfaces.NewServiceClient(i.vppConn).SwInterfaceSetRxMode(ctx, &interfaces.SwInterfaceSetRxMode{
+			SwIfIndex: rsp.SwIfIndex,
+			Mode:      interface_types.RX_MODE_API_ADAPTIVE,
+		}); err != nil {
+			return err
+		}
+		if _, err := interfaces.NewServiceClient(i.vppConn).SwInterfaceSetFlags(ctx, &interfaces.SwInterfaceSetFlags{
+			SwIfIndex: rsp.SwIfIndex,
+			Flags:     interface_types.IF_STATUS_API_FLAG_ADMIN_UP,
+		}); err != nil {
+			return err
+		}
+		i.swIfIndex = rsp.SwIfIndex
+	} else {
+		i.clientsRefCount--
+		if i.clientsRefCount > 0 {
+			return nil
+		}
+		// delete parent interface from vpp when last ns client is deleted
+		_, err := af_packet.NewServiceClient(i.vppConn).AfPacketDelete(ctx, &af_packet.AfPacketDelete{
+			HostIfName: i.parentIfName,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (i *ifConfigServer) closeLinkSubscribe(done chan struct{}, linkUpdateCh chan netlink.LinkUpdate) {

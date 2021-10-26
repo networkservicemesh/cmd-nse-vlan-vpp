@@ -35,6 +35,7 @@ import (
 
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	"github.com/edwarnicke/grpcfd"
+	"github.com/edwarnicke/vpphelper"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -105,20 +106,22 @@ func (c *Config) Process() error {
 
 func logPhases(ctx context.Context) {
 	// enumerating phases
-	log.FromContext(ctx).Infof("there are 6 phases which will be executed followed by a success message:")
+	log.FromContext(ctx).Infof("there are 7 phases which will be executed followed by a success message:")
 	log.FromContext(ctx).Infof("the phases include:")
 	log.FromContext(ctx).Infof("1: get config from environment")
-	log.FromContext(ctx).Infof("2: retrieve spiffe svid")
-	log.FromContext(ctx).Infof("3: create vlan-vpp-responder ipam")
-	log.FromContext(ctx).Infof("4: create vlan-vpp-responder nse")
-	log.FromContext(ctx).Infof("5: create grpc and mount nse")
-	log.FromContext(ctx).Infof("6: register nse with nsm")
+	log.FromContext(ctx).Infof("2: run vpp and get a connection to it")
+	log.FromContext(ctx).Infof("3: retrieve spiffe svid")
+	log.FromContext(ctx).Infof("4: create vlan-vpp-responder ipam")
+	log.FromContext(ctx).Infof("5: create vlan-vpp-responder nse")
+	log.FromContext(ctx).Infof("6: create grpc and mount nse")
+	log.FromContext(ctx).Infof("7: register nse with nsm")
 	log.FromContext(ctx).Infof("a final success message with start time duration")
 }
 
-func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Config, ipnet *net.IPNet, cancel context.CancelFunc) (endpoint.Endpoint, ifconfig.Server) {
+func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Config, vppConn vpphelper.Connection, ipnet *net.IPNet, cancel context.CancelFunc) (endpoint.Endpoint, ifconfig.Server) {
 	sriovTokenVlanServer := getSriovTokenVlanServerChainElement(getTokenKey(ctx, tokens.FromEnv(os.Environ())))
-	ifConfigServer := ifconfig.NewServer(config.Name)
+	parentIfName := getParentIfname(config.Name)
+	ifConfigServer := ifconfig.NewServer(parentIfName, vppConn)
 	responderEndpoint := endpoint.NewServer(ctx,
 		spiffejwt.TokenGeneratorFunc(source, config.MaxTokenLifetime),
 		endpoint.WithName(config.Name),
@@ -128,7 +131,7 @@ func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Confi
 			point2pointipam.NewServer(ipnet),
 			recvfd.NewServer(),
 			mechanisms.NewServer(map[string]networkservice.NetworkServiceServer{
-				kernelmech.MECHANISM: kernel.NewServer(kernel.WithInterfaceName(getParentIfname(config.Name))),
+				kernelmech.MECHANISM: kernel.NewServer(kernel.WithInterfaceName(parentIfName)),
 			}),
 			sriovTokenVlanServer,
 			ifConfigServer,
@@ -262,20 +265,25 @@ func main() {
 	log.FromContext(ctx).Infof("Config: %#v", config)
 
 	// ********************************************************************************
-	log.FromContext(ctx).Infof("executing phase 2: retrieving svid, check spire agent logs if this is the last line you see")
+	log.FromContext(ctx).Infof("executing phase 2: run vpp and get a connection to it (time since start: %s)", time.Since(starttime))
+	// ********************************************************************************
+	vppConn, vppErrCh := vpphelper.StartAndDialContext(ctx)
+	exitOnErr(ctx, cancel, vppErrCh)
+
+	// ********************************************************************************
+	log.FromContext(ctx).Infof("executing phase 3: retrieving svid, check spire agent logs if this is the last line you see")
 	// ********************************************************************************
 	source, err := workloadapi.NewX509Source(ctx)
 	if err != nil {
 		logrus.Fatalf("error getting x509 source: %+v", err)
 	}
-	svid, err := source.GetX509SVID()
+	_, err = source.GetX509SVID()
 	if err != nil {
 		logrus.Fatalf("error getting x509 svid: %+v", err)
 	}
-	log.FromContext(ctx).Infof("SVID: %q", svid.ID)
 
 	// ********************************************************************************
-	log.FromContext(ctx).Infof("executing phase 3: creating vlan-vpp-responder ipam")
+	log.FromContext(ctx).Infof("executing phase 4: creating vlan-vpp-responder ipam")
 	// ********************************************************************************
 	_, ipnet, err := net.ParseCIDR(config.CidrPrefix)
 	if err != nil {
@@ -283,11 +291,11 @@ func main() {
 	}
 
 	// ********************************************************************************
-	log.FromContext(ctx).Infof("executing phase 4: create vlan-vpp-responder network service endpoint")
+	log.FromContext(ctx).Infof("executing phase 5: create vlan-vpp-responder network service endpoint")
 	// ********************************************************************************
-	responderEndpoint, ifConfigServer := createNSEndpoint(ctx, source, config, ipnet, cancel)
+	responderEndpoint, ifConfigServer := createNSEndpoint(ctx, source, config, vppConn, ipnet, cancel)
 	// ********************************************************************************
-	log.FromContext(ctx).Infof("executing phase 5: create grpc server and register vlan-vpp-responder")
+	log.FromContext(ctx).Infof("executing phase 6: create grpc server and register vlan-vpp-responder")
 	// ********************************************************************************
 
 	server := registerGRPCServer(source, responderEndpoint)
@@ -302,7 +310,7 @@ func main() {
 	log.FromContext(ctx).Infof("grpc server started")
 
 	// ********************************************************************************
-	log.FromContext(ctx).Infof("executing phase 6: register nse with nsm")
+	log.FromContext(ctx).Infof("executing phase 7: register nse with nsm")
 	// ********************************************************************************
 	err = registerEndpoint(ctx, config, source, listenOn)
 	if err != nil {
