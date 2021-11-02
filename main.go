@@ -152,7 +152,7 @@ func getParentIfname(nseName string) string {
 	return nif[:kernelmech.LinuxIfMaxLength]
 }
 
-func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint endpoint.Endpoint) *grpc.Server {
+func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint *endpoint.Endpoint) *grpc.Server {
 	options := append(
 		opentracing.WithTracing(),
 		grpc.Creds(
@@ -164,12 +164,12 @@ func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint endpoi
 		),
 	)
 	server := grpc.NewServer(options...)
-	responderEndpoint.Register(server)
+	(*responderEndpoint).Register(server)
 
 	return server
 }
 
-func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X509Source, listenOn *url.URL) error {
+func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X509Source, urlStr string) error {
 	clientOptions := append(
 		opentracing.WithTracingDial(),
 		grpc.WithBlock(),
@@ -191,7 +191,9 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 				Payload: config.Payload,
 			})
 
-			return err
+			if err != nil {
+				log.FromContext(ctx).Fatalf("unable to register ns %+v", err)
+			}
 		}
 	}
 
@@ -200,7 +202,7 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 		Name:                 config.Name,
 		NetworkServiceNames:  config.ServiceNames,
 		NetworkServiceLabels: make(map[string]*registryapi.NetworkServiceLabels),
-		Url:                  grpcutils.URLToTarget(listenOn),
+		Url:                  urlStr,
 	}
 	for _, serviceName := range config.ServiceNames {
 		nse.NetworkServiceLabels[serviceName] = &registryapi.NetworkServiceLabels{Labels: config.Labels}
@@ -298,7 +300,7 @@ func main() {
 	log.FromContext(ctx).Infof("executing phase 6: create grpc server and register vlan-vpp-responder")
 	// ********************************************************************************
 
-	server := registerGRPCServer(source, responderEndpoint)
+	server := registerGRPCServer(source, &responderEndpoint)
 	tmpDir, err := ioutil.TempDir("", config.Name)
 	if err != nil {
 		logrus.Fatalf("error creating tmpDir %+v", err)
@@ -312,7 +314,7 @@ func main() {
 	// ********************************************************************************
 	log.FromContext(ctx).Infof("executing phase 7: register nse with nsm")
 	// ********************************************************************************
-	err = registerEndpoint(ctx, config, source, listenOn)
+	err = registerEndpoint(ctx, config, source, listenOn.String())
 	if err != nil {
 		log.FromContext(ctx).Fatalf("failed to connect to registry: %+v", err)
 	}
@@ -321,10 +323,10 @@ func main() {
 	log.FromContext(ctx).Infof("startup completed in %v", time.Since(starttime))
 	// ********************************************************************************
 
-	ifConfigServer.Stop()
-
 	// wait for server to exit
 	<-ctx.Done()
+
+	ifConfigServer.Stop()
 }
 
 func getSriovTokenVlanServerChainElement(tokenKey string) (tokenServer networkservice.NetworkServiceServer) {
