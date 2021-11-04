@@ -47,12 +47,12 @@ const (
 )
 
 type ifOp struct {
-	ctx    context.Context
 	conn   *networkservice.Connection
 	OpCode int
 }
 
 type ifConfigServer struct {
+	ifCtx           context.Context
 	stopWg          sync.WaitGroup
 	ifOps           chan ifOp
 	stop            chan interface{}
@@ -71,8 +71,8 @@ type Server interface {
 }
 
 // NewServer creates new ifconfig server instance
-func NewServer(parentIfName string, vppConn vpphelper.Connection) Server {
-	ifServer := &ifConfigServer{parentIfName: parentIfName, ifOps: make(chan ifOp, bufSize),
+func NewServer(ctx context.Context, parentIfName string, vppConn vpphelper.Connection) Server {
+	ifServer := &ifConfigServer{ifCtx: ctx, parentIfName: parentIfName, ifOps: make(chan ifOp, bufSize),
 		swIfIndexesMap: make(map[string]interface_types.InterfaceIndex), stop: make(chan interface{}),
 		vppConn: vppConn, connections: make(map[string]interface{})}
 	ifServer.stopWg.Add(1)
@@ -95,7 +95,7 @@ func (i *ifConfigServer) Request(ctx context.Context, request *networkservice.Ne
 		i.connections[connectionID] = nil
 		i.mutex.Unlock()
 
-		i.ifOps <- ifOp{ctx, request.GetConnection(), add}
+		i.ifOps <- ifOp{request.GetConnection(), add}
 	}
 	return next.Server(ctx).Request(ctx, request)
 }
@@ -111,7 +111,7 @@ func (i *ifConfigServer) Close(ctx context.Context, conn *networkservice.Connect
 		}
 		delete(i.connections, connectionID)
 		i.mutex.Unlock()
-		i.ifOps <- ifOp{ctx, conn, remove}
+		i.ifOps <- ifOp{conn, remove}
 	}
 	return next.Server(ctx).Close(ctx, conn)
 }
@@ -129,18 +129,18 @@ func (i *ifConfigServer) handleIfOp() {
 		case ifOpObj := <-i.ifOps:
 			switch ifOpObj.OpCode {
 			case add:
-				logger := log.FromContext(ifOpObj.ctx).WithField("handleIfOp", add)
-				shouldReturn := i.handleIfOpAdd(ifOpObj.ctx, logger, ifOpObj)
+				logger := log.FromContext(i.ifCtx).WithField("handleIfOp", add)
+				shouldReturn := i.handleIfOpAdd(i.ifCtx, logger, ifOpObj)
 				if shouldReturn {
 					return
 				}
 			case remove:
-				logger := log.FromContext(ifOpObj.ctx).WithField("handleIfOp", remove)
-				err := i.addDeleteVppParentIf(ifOpObj.ctx, logger, ifOpObj.conn, false)
+				logger := log.FromContext(i.ifCtx).WithField("handleIfOp", remove)
+				err := i.addDeleteVppParentIf(i.ifCtx, logger, ifOpObj.conn, false)
 				if err != nil {
 					logger.Errorf("error handling removal of parent interface on vpp: %v", err)
 				}
-				err = i.removeVlanSubInterface(ifOpObj.ctx, logger, ifOpObj.conn)
+				err = i.removeVlanSubInterface(i.ifCtx, logger, ifOpObj.conn)
 				if err != nil {
 					logger.Errorf("error deleting vlan sub-interface on vpp: %v", err)
 				}
@@ -313,8 +313,8 @@ func (i *ifConfigServer) toRoute(route *networkservice.Route, via interface_type
 
 func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Logger, conn *networkservice.Connection, isAdd bool) error {
 	if isAdd {
-		i.clientsRefCount++
-		if i.clientsRefCount > 1 {
+		if i.clientsRefCount > 0 {
+			i.clientsRefCount++
 			return nil
 		}
 		// TODO: revisit this to support RDMA config on the parent interface
@@ -334,10 +334,11 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Lo
 			return err
 		}
 		i.swIfIndexesMap[i.parentIfName] = rsp.SwIfIndex
+		i.clientsRefCount++
 		logger.Infof("parent interface %s is added into vpp, if index %v", i.parentIfName, i.swIfIndexesMap[i.parentIfName])
 	} else {
-		i.clientsRefCount--
-		if i.clientsRefCount > 0 {
+		if i.clientsRefCount > 1 {
+			i.clientsRefCount--
 			return nil
 		}
 		// delete parent interface from vpp when last ns client is deleted
@@ -348,6 +349,7 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Lo
 			return err
 		}
 		delete(i.swIfIndexesMap, i.parentIfName)
+		i.clientsRefCount--
 		logger.Infof("parent interface %s is deleted from vpp", i.parentIfName)
 	}
 	return nil
