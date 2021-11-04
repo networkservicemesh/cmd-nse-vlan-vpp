@@ -136,11 +136,11 @@ func (i *ifConfigServer) handleIfOp() {
 				}
 			case remove:
 				logger := log.FromContext(ifOpObj.ctx).WithField("handleIfOp", remove)
-				err := i.addDeleteVppParentIf(ifOpObj.ctx, ifOpObj.conn, false)
+				err := i.addDeleteVppParentIf(ifOpObj.ctx, logger, ifOpObj.conn, false)
 				if err != nil {
 					logger.Errorf("error handling removal of parent interface on vpp: %v", err)
 				}
-				err = i.removeVlanSubInterface(ifOpObj.ctx, ifOpObj.conn)
+				err = i.removeVlanSubInterface(ifOpObj.ctx, logger, ifOpObj.conn)
 				if err != nil {
 					logger.Errorf("error deleting vlan sub-interface on vpp: %v", err)
 				}
@@ -155,7 +155,7 @@ func (i *ifConfigServer) handleIfOpAdd(ctx context.Context, logger log.Logger, i
 		case <-i.stop:
 			return true
 		default:
-			parentIf, err := netlink.LinkByName(i.parentIfName)
+			_, err := netlink.LinkByName(i.parentIfName)
 			if err != nil {
 				done := make(chan struct{})
 				linkUpdateCh := make(chan netlink.LinkUpdate)
@@ -166,7 +166,7 @@ func (i *ifConfigServer) handleIfOpAdd(ctx context.Context, logger log.Logger, i
 					return true
 				}
 				// find the link again to avoid the race
-				parentIf, err = netlink.LinkByName(i.parentIfName)
+				_, err = netlink.LinkByName(i.parentIfName)
 				if err != nil {
 					select {
 					case <-i.stop:
@@ -179,32 +179,27 @@ func (i *ifConfigServer) handleIfOpAdd(ctx context.Context, logger log.Logger, i
 							return true
 						}
 						if linkUpdateEvent.Link.Attrs().Name != i.parentIfName {
-							logger.Infof("interface update received for: %s", linkUpdateEvent.Link.Attrs().Name)
+							logger.Infof("interface update event: actual: %s expected: %s", linkUpdateEvent.Link.Attrs().Name, i.parentIfName)
 							continue
 						}
-						parentIf, err = netlink.LinkByName(i.parentIfName)
+						_, err = netlink.LinkByName(i.parentIfName)
 						if err != nil {
 							continue
-						}
-						err = i.addDeleteVppParentIf(ctx, ifOpObj.conn, true)
-						if err != nil {
-							logger.Errorf("error processing parent interface on vpp: %v", err)
-							return false
 						}
 					}
 				} else {
 					i.closeLinkSubscribe(done, linkUpdateCh)
-					err = i.addDeleteVppParentIf(ctx, ifOpObj.conn, true)
-					if err != nil {
-						logger.Errorf("error handling parent interface on vpp: %v", err)
-						return false
-					}
 				}
 			}
-			logger.Infof("add vlan sub interface: parent interface %v: connection %v", parentIf, ifOpObj.conn.String())
-			err = i.addVlanSubInterface(ctx, ifOpObj.conn)
+			err = i.addDeleteVppParentIf(ctx, logger, ifOpObj.conn, true)
 			if err != nil {
-				logger.Errorf("error adding vlan sub interface for connection %v: %v", ifOpObj.conn, err)
+				logger.Errorf("error handling parent interface on vpp: %v", err)
+				return false
+			}
+			logger.Infof("add vlan sub interface: parent interface %s: connection %v", i.parentIfName, ifOpObj.conn.String())
+			err = i.addVlanSubInterface(ctx, logger, ifOpObj.conn)
+			if err != nil {
+				logger.Errorf("error adding vlan sub interface for connection: %v, err: %v", ifOpObj.conn, err)
 			}
 		}
 		break
@@ -212,7 +207,7 @@ func (i *ifConfigServer) handleIfOpAdd(ctx context.Context, logger log.Logger, i
 	return false
 }
 
-func (i *ifConfigServer) removeVlanSubInterface(ctx context.Context, conn *networkservice.Connection) error {
+func (i *ifConfigServer) removeVlanSubInterface(ctx context.Context, logger log.Logger, conn *networkservice.Connection) error {
 	var swVLANIfIndex interface_types.InterfaceIndex
 	var ok bool
 	if swVLANIfIndex, ok = i.swIfIndexesMap[conn.GetId()]; !ok {
@@ -225,18 +220,20 @@ func (i *ifConfigServer) removeVlanSubInterface(ctx context.Context, conn *netwo
 		return err
 	}
 	delete(i.swIfIndexesMap, conn.GetId())
+	logger.Infof("vlan sub interface removed for VLAN ID: %d", kernel.ToMechanism(conn.GetMechanism()).GetVLAN())
 	return nil
 }
 
-func (i *ifConfigServer) addVlanSubInterface(ctx context.Context, conn *networkservice.Connection) error {
+func (i *ifConfigServer) addVlanSubInterface(ctx context.Context, logger log.Logger, conn *networkservice.Connection) error {
 	var swParentIfIndex interface_types.InterfaceIndex
 	var ok bool
 	if swParentIfIndex, ok = i.swIfIndexesMap[i.parentIfName]; !ok {
 		return errors.Errorf("parent interface not found for connection %v", conn)
 	}
+	vlanID := kernel.ToMechanism(conn.GetMechanism()).GetVLAN()
 	rsp, err := interfaces.NewServiceClient(i.vppConn).CreateVlanSubif(ctx, &interfaces.CreateVlanSubif{
 		SwIfIndex: swParentIfIndex,
-		VlanID:    kernel.ToMechanism(conn.GetMechanism()).GetVLAN(),
+		VlanID:    vlanID,
 	})
 	if err != nil {
 		return err
@@ -268,6 +265,7 @@ func (i *ifConfigServer) addVlanSubInterface(ctx context.Context, conn *networks
 		}
 	}
 	i.swIfIndexesMap[conn.GetId()] = rsp.SwIfIndex
+	logger.Infof("vlan sub interface is configured for VLAN ID %d, if index %v", vlanID, i.swIfIndexesMap[conn.GetId()])
 	return nil
 }
 
@@ -313,7 +311,7 @@ func (i *ifConfigServer) toRoute(route *networkservice.Route, via interface_type
 	return rv
 }
 
-func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, conn *networkservice.Connection, isAdd bool) error {
+func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Logger, conn *networkservice.Connection, isAdd bool) error {
 	if isAdd {
 		i.clientsRefCount++
 		if i.clientsRefCount > 1 {
@@ -336,6 +334,7 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, conn *network
 			return err
 		}
 		i.swIfIndexesMap[i.parentIfName] = rsp.SwIfIndex
+		logger.Infof("parent interface %s is added into vpp, if index %v", i.parentIfName, i.swIfIndexesMap[i.parentIfName])
 	} else {
 		i.clientsRefCount--
 		if i.clientsRefCount > 0 {
@@ -349,6 +348,7 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, conn *network
 			return err
 		}
 		delete(i.swIfIndexesMap, i.parentIfName)
+		logger.Infof("parent interface %s is deleted from vpp", i.parentIfName)
 	}
 	return nil
 }
