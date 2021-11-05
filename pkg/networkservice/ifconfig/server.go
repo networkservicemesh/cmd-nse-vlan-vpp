@@ -21,6 +21,8 @@ package ifconfig
 
 import (
 	"context"
+	"fmt"
+	"net"
 	"sync"
 
 	"github.com/edwarnicke/govpp/binapi/af_packet"
@@ -87,12 +89,12 @@ func (i *ifConfigServer) Request(ctx context.Context, request *networkservice.Ne
 	mechanism := kernel.ToMechanism(request.GetConnection().GetMechanism())
 	if mechanism != nil && mechanism.GetVLAN() > 0 {
 		i.mutex.Lock()
-		connectionID := request.GetConnection().GetId()
-		if _, exists := i.connections[connectionID]; exists {
+		connectionKey := i.getConnectionKey(mechanism.GetVLAN())
+		if _, exists := i.connections[connectionKey]; exists {
 			i.mutex.Unlock()
 			return next.Server(ctx).Request(ctx, request)
 		}
-		i.connections[connectionID] = nil
+		i.connections[connectionKey] = nil
 		i.mutex.Unlock()
 
 		i.ifOps <- ifOp{request.GetConnection(), add}
@@ -104,12 +106,12 @@ func (i *ifConfigServer) Close(ctx context.Context, conn *networkservice.Connect
 	mechanism := kernel.ToMechanism(conn.GetMechanism())
 	if mechanism != nil && mechanism.GetVLAN() > 0 {
 		i.mutex.Lock()
-		connectionID := conn.GetId()
-		if _, exists := i.connections[connectionID]; !exists {
+		connectionKey := i.getConnectionKey(mechanism.GetVLAN())
+		if _, exists := i.connections[connectionKey]; !exists {
 			i.mutex.Unlock()
 			return next.Server(ctx).Close(ctx, conn)
 		}
-		delete(i.connections, connectionID)
+		delete(i.connections, connectionKey)
 		i.mutex.Unlock()
 		i.ifOps <- ifOp{conn, remove}
 	}
@@ -121,6 +123,10 @@ func (i *ifConfigServer) Stop() {
 	i.stopWg.Wait()
 }
 
+func (i *ifConfigServer) getConnectionKey(vlanID uint32) string {
+	return i.parentIfName + "." + fmt.Sprint(vlanID)
+}
+
 func (i *ifConfigServer) handleIfOp() {
 	for {
 		select {
@@ -129,20 +135,20 @@ func (i *ifConfigServer) handleIfOp() {
 		case ifOpObj := <-i.ifOps:
 			switch ifOpObj.OpCode {
 			case add:
-				logger := log.FromContext(i.ifCtx).WithField("handleIfOp", add)
+				logger := log.FromContext(i.ifCtx).WithField("handleIfOp", "add")
 				shouldReturn := i.handleIfOpAdd(i.ifCtx, logger, ifOpObj)
 				if shouldReturn {
 					return
 				}
 			case remove:
-				logger := log.FromContext(i.ifCtx).WithField("handleIfOp", remove)
-				err := i.addDeleteVppParentIf(i.ifCtx, logger, ifOpObj.conn, false)
-				if err != nil {
-					logger.Errorf("error handling removal of parent interface on vpp: %v", err)
-				}
-				err = i.removeVlanSubInterface(i.ifCtx, logger, ifOpObj.conn)
+				logger := log.FromContext(i.ifCtx).WithField("handleIfOp", "remove")
+				err := i.removeVlanSubInterface(i.ifCtx, logger, ifOpObj.conn)
 				if err != nil {
 					logger.Errorf("error deleting vlan sub-interface on vpp: %v", err)
+				}
+				err = i.addDeleteVppParentIf(i.ifCtx, logger, ifOpObj.conn, false)
+				if err != nil {
+					logger.Errorf("error handling removal of parent interface on vpp: %v", err)
 				}
 			}
 		}
@@ -210,17 +216,30 @@ func (i *ifConfigServer) handleIfOpAdd(ctx context.Context, logger log.Logger, i
 func (i *ifConfigServer) removeVlanSubInterface(ctx context.Context, logger log.Logger, conn *networkservice.Connection) error {
 	var swVLANIfIndex interface_types.InterfaceIndex
 	var ok bool
-	if swVLANIfIndex, ok = i.swIfIndexesMap[conn.GetId()]; !ok {
+	connectionKey := i.getConnectionKey(kernel.ToMechanism(conn.GetMechanism()).GetVLAN())
+	if swVLANIfIndex, ok = i.swIfIndexesMap[connectionKey]; !ok {
 		return errors.Errorf("vlan interface not found for connection %v", conn)
 	}
-	_, err := interfaces.NewServiceClient(i.vppConn).DeleteSubif(ctx, &interfaces.DeleteSubif{
+
+	err := i.ipaddressAddDel(ctx, swVLANIfIndex, conn.GetContext().GetIpContext().GetDstIPNets(), false)
+	if err != nil {
+		return err
+	}
+
+	err = i.routeAddDel(ctx, swVLANIfIndex, conn.GetContext().GetIpContext().GetSrcIPRoutes(), false)
+	if err != nil {
+		return err
+	}
+
+	_, err = interfaces.NewServiceClient(i.vppConn).DeleteSubif(ctx, &interfaces.DeleteSubif{
 		SwIfIndex: swVLANIfIndex,
 	})
 	if err != nil {
 		return err
 	}
-	delete(i.swIfIndexesMap, conn.GetId())
-	logger.Infof("vlan sub interface removed for VLAN ID: %d", kernel.ToMechanism(conn.GetMechanism()).GetVLAN())
+
+	delete(i.swIfIndexesMap, connectionKey)
+	logger.Infof("vlan sub interface removed for connection: %v", conn)
 	return nil
 }
 
@@ -238,51 +257,63 @@ func (i *ifConfigServer) addVlanSubInterface(ctx context.Context, logger log.Log
 	if err != nil {
 		return err
 	}
-	err = i.makeIfOpUp(ctx, rsp.SwIfIndex)
+
+	if _, err = interfaces.NewServiceClient(i.vppConn).SwInterfaceSetFlags(ctx, &interfaces.SwInterfaceSetFlags{
+		SwIfIndex: rsp.SwIfIndex,
+		Flags:     interface_types.IF_STATUS_API_FLAG_ADMIN_UP,
+	}); err != nil {
+		return err
+	}
+
+	err = i.ipaddressAddDel(ctx, rsp.SwIfIndex, conn.GetContext().GetIpContext().GetDstIPNets(), true)
 	if err != nil {
 		return err
 	}
-	ipNets := conn.GetContext().GetIpContext().GetSrcIPNets()
+
+	err = i.routeAddDel(ctx, rsp.SwIfIndex, conn.GetContext().GetIpContext().GetSrcIPRoutes(), true)
+	if err != nil {
+		return err
+	}
+
+	i.swIfIndexesMap[i.getConnectionKey(vlanID)] = rsp.SwIfIndex
+	logger.Infof("vlan sub interface configured for VLAN ID %d, if index %v, connection %v", vlanID, i.swIfIndexesMap[conn.GetId()], conn)
+	return nil
+}
+
+func (i *ifConfigServer) ipaddressAddDel(ctx context.Context, swIfIndex interface_types.InterfaceIndex, ipNets []*net.IPNet, isAdd bool) error {
 	if ipNets == nil {
 		return nil
 	}
 	for _, ipNet := range ipNets {
 		if _, err := interfaces.NewServiceClient(i.vppConn).SwInterfaceAddDelAddress(ctx, &interfaces.SwInterfaceAddDelAddress{
-			SwIfIndex: rsp.SwIfIndex,
-			IsAdd:     true,
+			SwIfIndex: swIfIndex,
+			IsAdd:     isAdd,
 			Prefix:    types.ToVppAddressWithPrefix(ipNet),
 		}); err != nil {
 			return err
 		}
 	}
-	routes := conn.GetContext().GetIpContext().GetSrcIPRoutes()
+	return nil
+}
+
+func (i *ifConfigServer) routeAddDel(ctx context.Context, swIfIndex interface_types.InterfaceIndex, routes []*networkservice.Route, isAdd bool) error {
 	if routes == nil {
 		return nil
 	}
 	for _, route := range routes {
-		if err := i.routeAdd(ctx, rsp.SwIfIndex, route); err != nil {
+		if route.GetPrefixIPNet() == nil {
+			return errors.New("vppRoute prefix must not be nil")
+		}
+		vppRoute := i.toRoute(route, swIfIndex)
+
+		if _, err := ip.NewServiceClient(i.vppConn).IPRouteAddDel(ctx, &ip.IPRouteAddDel{
+			IsAdd:       isAdd,
+			IsMultipath: false,
+			Route:       vppRoute,
+		}); err != nil {
 			return err
 		}
 	}
-	i.swIfIndexesMap[conn.GetId()] = rsp.SwIfIndex
-	logger.Infof("vlan sub interface is configured for VLAN ID %d, if index %v", vlanID, i.swIfIndexesMap[conn.GetId()])
-	return nil
-}
-
-func (i *ifConfigServer) routeAdd(ctx context.Context, swIfIndex interface_types.InterfaceIndex, route *networkservice.Route) error {
-	if route.GetPrefixIPNet() == nil {
-		return errors.New("vppRoute prefix must not be nil")
-	}
-	vppRoute := i.toRoute(route, swIfIndex)
-
-	if _, err := ip.NewServiceClient(i.vppConn).IPRouteAddDel(ctx, &ip.IPRouteAddDel{
-		IsAdd:       true,
-		IsMultipath: false,
-		Route:       vppRoute,
-	}); err != nil {
-		return err
-	}
-
 	return nil
 }
 
