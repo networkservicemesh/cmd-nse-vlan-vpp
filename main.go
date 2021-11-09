@@ -121,7 +121,7 @@ func logPhases(ctx context.Context) {
 func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Config, vppConn vpphelper.Connection, ipnet *net.IPNet, cancel context.CancelFunc) (endpoint.Endpoint, ifconfig.Server) {
 	sriovTokenVlanServer := getSriovTokenVlanServerChainElement(getTokenKey(ctx, tokens.FromEnv(os.Environ())))
 	parentIfName := getParentIfname(config.Name)
-	ifConfigServer := ifconfig.NewServer(parentIfName, vppConn)
+	ifConfigServer := ifconfig.NewServer(ctx, parentIfName, vppConn)
 	responderEndpoint := endpoint.NewServer(ctx,
 		spiffejwt.TokenGeneratorFunc(source, config.MaxTokenLifetime),
 		endpoint.WithName(config.Name),
