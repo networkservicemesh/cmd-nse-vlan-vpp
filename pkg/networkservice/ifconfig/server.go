@@ -30,6 +30,7 @@ import (
 	interfaces "github.com/edwarnicke/govpp/binapi/interface"
 	"github.com/edwarnicke/govpp/binapi/interface_types"
 	"github.com/edwarnicke/govpp/binapi/ip"
+	"github.com/edwarnicke/govpp/binapi/rdma"
 	"github.com/edwarnicke/vpphelper"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
@@ -348,23 +349,34 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Lo
 			i.clientsRefCount++
 			return nil
 		}
-		// TODO: revisit this to support RDMA config on the parent interface
-		if kernel.ToMechanism(conn.GetMechanism()).GetDeviceTokenID() != "" {
-			return errors.Errorf("only raw socket config supported on parent kernel interface %v", conn)
-		}
 		// create parent interface on vpp when first ns client shows up
-		rsp, err := af_packet.NewServiceClient(i.vppConn).AfPacketCreate(ctx, &af_packet.AfPacketCreate{
-			HostIfName:      i.parentIfName,
-			UseRandomHwAddr: true,
-		})
+		var swIfIndex interface_types.InterfaceIndex
+		if kernel.ToMechanism(conn.GetMechanism()).GetDeviceTokenID() != "" {
+			// create RDMA interface as parent interface as it is a VF
+			rsp, err := rdma.NewServiceClient(i.vppConn).RdmaCreateV3(ctx, &rdma.RdmaCreateV3{
+				HostIf: i.parentIfName,
+				Name:   i.parentIfName,
+			})
+			if err != nil {
+				return err
+			}
+			swIfIndex = rsp.SwIfIndex
+		} else {
+			// create af packet interface as parent interface as it is a veth interface
+			rsp, err := af_packet.NewServiceClient(i.vppConn).AfPacketCreate(ctx, &af_packet.AfPacketCreate{
+				HostIfName:      i.parentIfName,
+				UseRandomHwAddr: true,
+			})
+			if err != nil {
+				return err
+			}
+			swIfIndex = rsp.SwIfIndex
+		}
+		err := i.makeIfOpUp(ctx, swIfIndex)
 		if err != nil {
 			return err
 		}
-		err = i.makeIfOpUp(ctx, rsp.SwIfIndex)
-		if err != nil {
-			return err
-		}
-		i.swIfIndexesMap[i.parentIfName] = rsp.SwIfIndex
+		i.swIfIndexesMap[i.parentIfName] = swIfIndex
 		i.clientsRefCount++
 		logger.Infof("parent interface %s is added into vpp, if index %v", i.parentIfName, i.swIfIndexesMap[i.parentIfName])
 	} else {
@@ -373,11 +385,22 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Lo
 			return nil
 		}
 		// delete parent interface from vpp when last ns client is deleted
-		_, err := af_packet.NewServiceClient(i.vppConn).AfPacketDelete(ctx, &af_packet.AfPacketDelete{
-			HostIfName: i.parentIfName,
-		})
-		if err != nil {
-			return err
+		if kernel.ToMechanism(conn.GetMechanism()).GetDeviceTokenID() != "" {
+			if swIfIndex, ok := i.swIfIndexesMap[i.parentIfName]; ok {
+				_, err := rdma.NewServiceClient(i.vppConn).RdmaDelete(ctx, &rdma.RdmaDelete{
+					SwIfIndex: swIfIndex,
+				})
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			_, err := af_packet.NewServiceClient(i.vppConn).AfPacketDelete(ctx, &af_packet.AfPacketDelete{
+				HostIfName: i.parentIfName,
+			})
+			if err != nil {
+				return err
+			}
 		}
 		delete(i.swIfIndexesMap, i.parentIfName)
 		i.clientsRefCount--
