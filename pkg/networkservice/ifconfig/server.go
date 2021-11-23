@@ -370,6 +370,12 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Lo
 			if err != nil {
 				return err
 			}
+			if _, err := interfaces.NewServiceClient(i.vppConn).SwInterfaceSetRxMode(ctx, &interfaces.SwInterfaceSetRxMode{
+				SwIfIndex: rsp.SwIfIndex,
+				Mode:      interface_types.RX_MODE_API_ADAPTIVE,
+			}); err != nil {
+				return err
+			}
 			swIfIndex = rsp.SwIfIndex
 		}
 		err := i.makeIfOpUp(ctx, swIfIndex)
@@ -410,12 +416,6 @@ func (i *ifConfigServer) addDeleteVppParentIf(ctx context.Context, logger log.Lo
 }
 
 func (i *ifConfigServer) makeIfOpUp(ctx context.Context, swIfIndex interface_types.InterfaceIndex) error {
-	if _, err := interfaces.NewServiceClient(i.vppConn).SwInterfaceSetRxMode(ctx, &interfaces.SwInterfaceSetRxMode{
-		SwIfIndex: swIfIndex,
-		Mode:      interface_types.RX_MODE_API_ADAPTIVE,
-	}); err != nil {
-		return err
-	}
 	if _, err := interfaces.NewServiceClient(i.vppConn).SwInterfaceSetFlags(ctx, &interfaces.SwInterfaceSetFlags{
 		SwIfIndex: swIfIndex,
 		Flags:     interface_types.IF_STATUS_API_FLAG_ADMIN_UP,
