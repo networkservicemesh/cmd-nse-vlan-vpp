@@ -218,8 +218,7 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 
 func setLogger(ctx context.Context) {
 	logrus.SetFormatter(&nested.Formatter{})
-	ctx = log.WithFields(ctx, map[string]interface{}{"cmd": os.Args[0]})
-	ctx = log.WithLog(ctx, logruslogger.New(ctx))
+	ctx = log.WithLog(ctx, logruslogger.New(ctx, map[string]interface{}{"cmd": os.Args[0]}))
 
 	if err := debug.Self(); err != nil {
 		log.FromContext(ctx).Infof("%s", err)
