@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Nordix Foundation.
+// Copyright (c) 2021-2022 Nordix Foundation.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -14,7 +14,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build linux
 // +build linux
+
 // #nosec
 
 package main
@@ -65,11 +67,11 @@ import (
 	"github.com/networkservicemesh/sdk/pkg/tools/debug"
 	dnstools "github.com/networkservicemesh/sdk/pkg/tools/dnscontext"
 	"github.com/networkservicemesh/sdk/pkg/tools/grpcutils"
-	"github.com/networkservicemesh/sdk/pkg/tools/jaeger"
 	"github.com/networkservicemesh/sdk/pkg/tools/log"
 	"github.com/networkservicemesh/sdk/pkg/tools/log/logruslogger"
-	"github.com/networkservicemesh/sdk/pkg/tools/opentracing"
+	"github.com/networkservicemesh/sdk/pkg/tools/opentelemetry"
 	"github.com/networkservicemesh/sdk/pkg/tools/spiffejwt"
+	"github.com/networkservicemesh/sdk/pkg/tools/tracing"
 
 	"github.com/networkservicemesh/cmd-nse-vlan-vpp/pkg/networkservice/ifconfig"
 )
@@ -80,17 +82,18 @@ const (
 
 // Config holds configuration parameters from environment variables
 type Config struct {
-	Name             string            `default:"vlan-vpp-responder" desc:"Name of vlan vpp responder"`
-	BaseDir          string            `default:"./" desc:"base directory" split_words:"true"`
-	ConnectTo        url.URL           `default:"unix:///var/lib/networkservicemesh/nsm.io.sock" desc:"url to connect to" split_words:"true"`
-	MaxTokenLifetime time.Duration     `default:"10m" desc:"maximum lifetime of tokens" split_words:"true"`
-	ServiceNames     []string          `default:"vlan-vpp-responder" desc:"Name of provided services" split_words:"true"`
-	Payload          string            `default:"ETHERNET" desc:"Name of provided service payload" split_words:"true"`
-	Labels           map[string]string `default:"" desc:"Endpoint labels"`
-	DNSConfigs       dnstools.Decoder  `default:"[]" desc:"DNSConfigs represents array of DNSConfig in json format. See at model definition: https://github.com/networkservicemesh/api/blob/main/pkg/api/networkservice/connectioncontext.pb.go#L426-L435" split_words:"true"`
-	CidrPrefix       string            `default:"169.254.0.0/16" desc:"CIDR Prefix to assign IPs from" split_words:"true"`
-	IdleTimeout      time.Duration     `default:"0" desc:"timeout for automatic shutdown when there were no requests for specified time. Set 0 to disable auto-shutdown." split_words:"true"`
-	RegisterService  bool              `default:"true" desc:"if true then registers network service on startup" split_words:"true"`
+	Name                  string            `default:"vlan-vpp-responder" desc:"Name of vlan vpp responder"`
+	BaseDir               string            `default:"./" desc:"base directory" split_words:"true"`
+	ConnectTo             url.URL           `default:"unix:///var/lib/networkservicemesh/nsm.io.sock" desc:"url to connect to" split_words:"true"`
+	MaxTokenLifetime      time.Duration     `default:"10m" desc:"maximum lifetime of tokens" split_words:"true"`
+	ServiceNames          []string          `default:"vlan-vpp-responder" desc:"Name of provided services" split_words:"true"`
+	Payload               string            `default:"ETHERNET" desc:"Name of provided service payload" split_words:"true"`
+	Labels                map[string]string `default:"" desc:"Endpoint labels"`
+	DNSConfigs            dnstools.Decoder  `default:"[]" desc:"DNSConfigs represents array of DNSConfig in json format. See at model definition: https://github.com/networkservicemesh/api/blob/main/pkg/api/networkservice/connectioncontext.pb.go#L426-L435" split_words:"true"`
+	CidrPrefix            string            `default:"169.254.0.0/16" desc:"CIDR Prefix to assign IPs from" split_words:"true"`
+	IdleTimeout           time.Duration     `default:"0" desc:"timeout for automatic shutdown when there were no requests for specified time. Set 0 to disable auto-shutdown." split_words:"true"`
+	RegisterService       bool              `default:"true" desc:"if true then registers network service on startup" split_words:"true"`
+	OpenTelemetryEndpoint string            `default:"otel-collector.observability.svc.cluster.local:4317" desc:"OpenTelemetry Collector Endpoint"`
 }
 
 // Process prints and processes env to config
@@ -154,7 +157,7 @@ func getParentIfname(nseName string) string {
 
 func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint *endpoint.Endpoint) *grpc.Server {
 	options := append(
-		opentracing.WithTracing(),
+		tracing.WithTracing(),
 		grpc.Creds(
 			grpcfd.TransportCredentials(
 				credentials.NewTLS(
@@ -171,7 +174,7 @@ func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint *endpo
 
 func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X509Source, urlStr string) error {
 	clientOptions := append(
-		opentracing.WithTracingDial(),
+		tracing.WithTracingDial(),
 		grpc.WithBlock(),
 		grpc.WithDefaultCallOptions(grpc.WaitForReady(true)),
 		grpc.WithTransportCredentials(
@@ -217,6 +220,7 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 }
 
 func setLogger(ctx context.Context) {
+	log.EnableTracing(true)
 	logrus.SetFormatter(&nested.Formatter{})
 	ctx = log.WithLog(ctx, logruslogger.New(ctx, map[string]interface{}{"cmd": os.Args[0]}))
 
@@ -244,13 +248,6 @@ func main() {
 	// ********************************************************************************
 	setLogger(ctx)
 
-	// ********************************************************************************
-	// Configure open tracing
-	// ********************************************************************************
-	log.EnableTracing(true)
-	jaegerCloser := jaeger.InitJaeger(ctx, "cmd-nse-vlan-vpp")
-	defer func() { _ = jaegerCloser.Close() }()
-
 	logPhases(ctx)
 
 	starttime := time.Now()
@@ -264,6 +261,21 @@ func main() {
 	}
 
 	log.FromContext(ctx).Infof("Config: %#v", config)
+
+	// ********************************************************************************
+	// Configure Open Telemetry
+	// ********************************************************************************
+	if opentelemetry.IsEnabled() {
+		collectorAddress := config.OpenTelemetryEndpoint
+		spanExporter := opentelemetry.InitSpanExporter(ctx, collectorAddress)
+		metricExporter := opentelemetry.InitMetricExporter(ctx, collectorAddress)
+		o := opentelemetry.Init(ctx, spanExporter, metricExporter, config.Name)
+		defer func() {
+			if err := o.Close(); err != nil {
+				log.FromContext(ctx).Error(err.Error())
+			}
+		}()
+	}
 
 	// ********************************************************************************
 	log.FromContext(ctx).Infof("executing phase 2: run vpp and get a connection to it (time since start: %s)", time.Since(starttime))
