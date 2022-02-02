@@ -64,6 +64,7 @@ import (
 	"github.com/networkservicemesh/sdk/pkg/networkservice/core/chain"
 	"github.com/networkservicemesh/sdk/pkg/networkservice/ipam/point2pointipam"
 	registryclient "github.com/networkservicemesh/sdk/pkg/registry/chains/client"
+	registrysendfd "github.com/networkservicemesh/sdk/pkg/registry/common/sendfd"
 	"github.com/networkservicemesh/sdk/pkg/tools/debug"
 	dnstools "github.com/networkservicemesh/sdk/pkg/tools/dnscontext"
 	"github.com/networkservicemesh/sdk/pkg/tools/grpcutils"
@@ -200,7 +201,14 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 		}
 	}
 
-	nseRegistryClient := registryclient.NewNetworkServiceEndpointRegistryClient(ctx, &config.ConnectTo, registryclient.WithDialOptions(clientOptions...))
+	nseRegistryClient := registryclient.NewNetworkServiceEndpointRegistryClient(
+		ctx,
+		&config.ConnectTo,
+		registryclient.WithDialOptions(clientOptions...),
+		registryclient.WithNSEAdditionalFunctionality(
+			registrysendfd.NewNetworkServiceEndpointRegistryClient(),
+		),
+	)
 	nse := &registryapi.NetworkServiceEndpoint{
 		Name:                 config.Name,
 		NetworkServiceNames:  config.ServiceNames,
