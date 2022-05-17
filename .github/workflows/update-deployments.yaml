@@ -13,7 +13,7 @@ jobs:
   update-deployments-k8s:
     name: Update deployments-k8s
     runs-on: ubuntu-latest
-    if: ${{ github.repository != 'networkservicemesh/cmd-template' && (github.event.workflow_run.conclusion == 'success' && github.actor == 'nsmbot' || github.ref == 'refs/heads/main') }}
+    if: ${{ github.repository != 'networkservicemesh/cmd-template' && (github.event.workflow_run.conclusion == 'success' && github.actor == 'nsmbot' || github.event_name == 'push') }}
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v2
@@ -49,12 +49,12 @@ jobs:
           repository: networkservicemesh/deployments-k8s
           token: ${{ secrets.NSM_BOT_GITHUB_TOKEN }}
       - name: Find and Replace version
-        uses: jacobtomlinson/gha-find-replace@master
+        uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "${{ github.event.repository.name }}:.*\n"
           replace: "${{ github.event.repository.name }}:${{ steps.short-sha.outputs.sha }}\n"
       - name: Find and Replace ci/${{ github.event.repository.name }} version
-        uses: jacobtomlinson/gha-find-replace@master
+        uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "ci/${{ github.event.repository.name }}:.*\n"
           replace: "ci/${{ github.event.repository.name }}:${{ steps.short-sha.outputs.sha }}\n"
