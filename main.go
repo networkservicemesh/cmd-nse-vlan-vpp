@@ -24,6 +24,7 @@ package main
 import (
 	"context"
 	"crypto/md5"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -156,13 +157,13 @@ func getParentIfname(nseName string) string {
 	return nif[:kernelmech.LinuxIfMaxLength]
 }
 
-func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint *endpoint.Endpoint) *grpc.Server {
+func registerGRPCServer(tlsServerConfig *tls.Config, responderEndpoint *endpoint.Endpoint) *grpc.Server {
 	options := append(
 		tracing.WithTracing(),
 		grpc.Creds(
 			grpcfd.TransportCredentials(
 				credentials.NewTLS(
-					tlsconfig.MTLSServerConfig(source, source, tlsconfig.AuthorizeAny()),
+					tlsServerConfig,
 				),
 			),
 		),
@@ -173,7 +174,7 @@ func registerGRPCServer(source *workloadapi.X509Source, responderEndpoint *endpo
 	return server
 }
 
-func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X509Source, urlStr string) error {
+func registerEndpoint(ctx context.Context, config *Config, tlsClientConfig *tls.Config, urlStr string) error {
 	clientOptions := append(
 		tracing.WithTracingDial(),
 		grpc.WithBlock(),
@@ -181,7 +182,7 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 		grpc.WithTransportCredentials(
 			grpcfd.TransportCredentials(
 				credentials.NewTLS(
-					tlsconfig.MTLSClientConfig(source, source, tlsconfig.AuthorizeAny()),
+					tlsClientConfig,
 				),
 			),
 		),
@@ -305,6 +306,11 @@ func main() {
 		logrus.Fatalf("error getting x509 svid: %+v", err)
 	}
 
+	tlsClientConfig := tlsconfig.MTLSClientConfig(source, source, tlsconfig.AuthorizeAny())
+	tlsClientConfig.MinVersion = tls.VersionTLS12
+	tlsServerConfig := tlsconfig.MTLSServerConfig(source, source, tlsconfig.AuthorizeAny())
+	tlsServerConfig.MinVersion = tls.VersionTLS12
+
 	// ********************************************************************************
 	log.FromContext(ctx).Infof("executing phase 4: creating vlan-vpp-responder ipam")
 	// ********************************************************************************
@@ -321,7 +327,7 @@ func main() {
 	log.FromContext(ctx).Infof("executing phase 6: create grpc server and register vlan-vpp-responder")
 	// ********************************************************************************
 
-	server := registerGRPCServer(source, &responderEndpoint)
+	server := registerGRPCServer(tlsServerConfig, &responderEndpoint)
 	tmpDir, err := ioutil.TempDir("", config.Name)
 	if err != nil {
 		logrus.Fatalf("error creating tmpDir %+v", err)
@@ -335,7 +341,7 @@ func main() {
 	// ********************************************************************************
 	log.FromContext(ctx).Infof("executing phase 7: register nse with nsm")
 	// ********************************************************************************
-	err = registerEndpoint(ctx, config, source, listenOn.String())
+	err = registerEndpoint(ctx, config, tlsClientConfig, listenOn.String())
 	if err != nil {
 		log.FromContext(ctx).Fatalf("failed to connect to registry: %+v", err)
 	}
