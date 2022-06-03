@@ -133,8 +133,8 @@ github.com/networkservicemesh/sdk v1.4.0-rc.2 h1:31UaiEH7npSHJYTsRlIHOndWhNwr6WE
 github.com/networkservicemesh/sdk v1.4.0-rc.2/go.mod h1:kLoLTb1acAGmO0uByJYHQi8+sSSsplWeBPktSAzRVJg=
 github.com/networkservicemesh/sdk-sriov v1.4.0-rc.2 h1:wGXDgzOQ3V3lZ6z6dTec8c0MPkbClRdLkL7FgCLbDIo=
 github.com/networkservicemesh/sdk-sriov v1.4.0-rc.2/go.mod h1:E91Hg2Dt0dTxQJeB7yInIv5ZZ3s8BVc4kWWGMe+1eOs=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20220530165926-7361a82cb19a h1:7igDaqlGNfj4Bm/v+uBtGDALAyeEyn6QH8L/ysb/Lg8=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20220530165926-7361a82cb19a/go.mod h1:2hr98TG0pnt8l81iLYZm6V/sm99zI8PNMiqzfKGA8R0=
+github.com/networkservicemesh/sdk-vpp v1.4.0-rc.2 h1:axMebBu4QViEx4TzHncOWFMssf+lIXAZSa3AcgNsVLc=
+github.com/networkservicemesh/sdk-vpp v1.4.0-rc.2/go.mod h1:DEA+FaHDSaK4asENFI0e0EMtT/ywHv7e0INaue0aTqE=
 github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.1.0 h1:e3YP4dN/HYPpGh29X1ZkcxcEICsOls9huyVCRBaxjq8=
