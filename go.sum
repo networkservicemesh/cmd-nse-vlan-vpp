@@ -133,8 +133,8 @@ github.com/networkservicemesh/sdk v0.5.1-0.20220629100133-a8211c59d6a6 h1:j2JuFO
 github.com/networkservicemesh/sdk v0.5.1-0.20220629100133-a8211c59d6a6/go.mod h1:FdmGiefBBcj9HlV+poQSEAPOuBVp/hkwjWoDEN2a+jg=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20220701101701-def85c9c0e95 h1:MKwLj57+Nv507z6s14r5MKO3Vidw79VnIh7IMGyEdkQ=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20220701101701-def85c9c0e95/go.mod h1:O9H0K7+2lnf3YNhjJdK4vaiBj/8yiRazcruWMxp7ZwU=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20220630112238-bff38ff77cb3 h1:eJs5ocYdOyfe+AtGBLxQCOYaGtWE2BJPn2A83E97Qa4=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20220630112238-bff38ff77cb3/go.mod h1:3OtrbwpVqA1wpHkMTRa3t6UNg++SrehsWzG1LX5xfU0=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20220704101827-397232cf8808 h1:j542Mc8en61ytejkMGO9Sye8d7g/I3J5ntDEoMoX8ns=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20220704101827-397232cf8808/go.mod h1:hmWdZMJ9VT0taG33BRBHA6AeBXKgEQOT48Nx4hnykpE=
 github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.1.0 h1:e3YP4dN/HYPpGh29X1ZkcxcEICsOls9huyVCRBaxjq8=
@@ -175,8 +175,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/vishvananda/netlink v1.1.1-0.20220118170537-d6b03fdeb845 h1:bIVwDExax2ZzN6mYF8Az0ms0wg+v/LYA4VI8x1TSQcs=
-github.com/vishvananda/netlink v1.1.1-0.20220118170537-d6b03fdeb845/go.mod h1:twkDnbuQxJYemMlGd4JFIcuhgX83tXhKS2B/PRMpOho=
+github.com/vishvananda/netlink v1.2.1-beta.2.0.20220630165224-c591ada0fb2b h1:CyMWBGvc1ZOvUBxW51DVTSIIAeJWWJJs+Ko3ouM/AVI=
+github.com/vishvananda/netlink v1.2.1-beta.2.0.20220630165224-c591ada0fb2b/go.mod h1:twkDnbuQxJYemMlGd4JFIcuhgX83tXhKS2B/PRMpOho=
 github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 h1:gga7acRE695APm9hlsSMoOoE65U4/TcqNj90mc69Rlg=
 github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
