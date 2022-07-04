@@ -12,11 +12,11 @@ require (
 	github.com/networkservicemesh/api v1.3.2-0.20220516230921-edaa6f46d6ab
 	github.com/networkservicemesh/sdk v0.5.1-0.20220629100133-a8211c59d6a6
 	github.com/networkservicemesh/sdk-sriov v0.0.0-20220701101701-def85c9c0e95
-	github.com/networkservicemesh/sdk-vpp v0.0.0-20220630112238-bff38ff77cb3
+	github.com/networkservicemesh/sdk-vpp v0.0.0-20220704101827-397232cf8808
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spiffe/go-spiffe/v2 v2.0.0
-	github.com/vishvananda/netlink v1.1.1-0.20220118170537-d6b03fdeb845
+	github.com/vishvananda/netlink v1.2.1-beta.2.0.20220630165224-c591ada0fb2b
 	google.golang.org/grpc v1.42.0
 )
 
