@@ -133,8 +133,8 @@ github.com/networkservicemesh/api v1.4.1-0.20220711153918-a59689088578 h1:2MZD6S
 github.com/networkservicemesh/api v1.4.1-0.20220711153918-a59689088578/go.mod h1:hOF2844BSstH1311oDMDgqqXS+kdc77htZNPRKl9mf8=
 github.com/networkservicemesh/sdk v0.5.1-0.20220728125347-990b34144761 h1:dJKtHDsa4rIZv/IhFzGV3/QVcmBZx5dDvxHSs+ZNhWs=
 github.com/networkservicemesh/sdk v0.5.1-0.20220728125347-990b34144761/go.mod h1:aT31j34psbMwTmyxgKZweiuYv783A1levN9nSKUVVp0=
-github.com/networkservicemesh/sdk-sriov v0.0.0-20220720094022-e3bdf12d2f92 h1:36mKoJeqqiti1QKguFesfYijoyBlPJG6yP23GC3KBcI=
-github.com/networkservicemesh/sdk-sriov v0.0.0-20220720094022-e3bdf12d2f92/go.mod h1:IS0lBfbzkrVSlWw2Z0l06bYzo1U2c3/YwHy0NLWylU8=
+github.com/networkservicemesh/sdk-sriov v0.0.0-20220729123117-6e6ba322cdf3 h1:LBj7yqMo81Pz7iWXw8e0reufeDikTeTDW8Z2yoM9Dpc=
+github.com/networkservicemesh/sdk-sriov v0.0.0-20220729123117-6e6ba322cdf3/go.mod h1:vZ69kHXaNP67jA5OhgBXCWpDUxXlfY6kQcOxv30R4oU=
 github.com/networkservicemesh/sdk-vpp v0.0.0-20220728130013-33b120bafcbb h1:2Ft07Ko0tZTrhhrSY1VDaHHDQSxjJlb8IW8TbJSds0M=
 github.com/networkservicemesh/sdk-vpp v0.0.0-20220728130013-33b120bafcbb/go.mod h1:TbVpHrkMDiS5bIpdmFPsqQuinfVcy/zEYL3NGGGTyIw=
 github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
