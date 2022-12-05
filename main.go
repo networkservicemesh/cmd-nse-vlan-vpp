@@ -65,6 +65,7 @@ import (
 	"github.com/networkservicemesh/sdk/pkg/networkservice/core/chain"
 	"github.com/networkservicemesh/sdk/pkg/networkservice/ipam/point2pointipam"
 	registryclient "github.com/networkservicemesh/sdk/pkg/registry/chains/client"
+	registryauthorize "github.com/networkservicemesh/sdk/pkg/registry/common/authorize"
 	registrysendfd "github.com/networkservicemesh/sdk/pkg/registry/common/sendfd"
 	"github.com/networkservicemesh/sdk/pkg/tools/debug"
 	"github.com/networkservicemesh/sdk/pkg/tools/dnsconfig"
@@ -174,25 +175,26 @@ func registerGRPCServer(tlsServerConfig *tls.Config, responderEndpoint *endpoint
 	return server
 }
 
-func registerEndpoint(ctx context.Context, config *Config, tlsClientConfig *tls.Config, urlStr string) error {
+func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X509Source, tlsClientConfig *tls.Config, urlStr string) error {
 	clientOptions := append(
 		tracing.WithTracingDial(),
 		grpc.WithBlock(),
-		grpc.WithDefaultCallOptions(grpc.WaitForReady(true)),
+		grpc.WithDefaultCallOptions(
+			grpc.WaitForReady(true),
+			grpc.PerRPCCredentials(token.NewPerRPCCredentials(spiffejwt.TokenGeneratorFunc(source, config.MaxTokenLifetime)))),
 		grpc.WithTransportCredentials(
 			grpcfd.TransportCredentials(
-				credentials.NewTLS(
-					tlsClientConfig,
-				),
-			),
-		),
+				credentials.NewTLS(tlsClientConfig))),
+		grpcfd.WithChainStreamInterceptor(),
+		grpcfd.WithChainUnaryInterceptor(),
 	)
 
 	if config.RegisterService {
 		for _, serviceName := range config.ServiceNames {
 			nsRegistryClient := registryclient.NewNetworkServiceRegistryClient(ctx,
 				registryclient.WithClientURL(&config.ConnectTo),
-				registryclient.WithDialOptions(clientOptions...))
+				registryclient.WithDialOptions(clientOptions...),
+				registryclient.WithAuthorizeNSRegistryClient(registryauthorize.NewNetworkServiceRegistryClient()))
 			_, err := nsRegistryClient.Register(ctx, &registryapi.NetworkService{
 				Name:    serviceName,
 				Payload: config.Payload,
@@ -211,6 +213,7 @@ func registerEndpoint(ctx context.Context, config *Config, tlsClientConfig *tls.
 		registryclient.WithNSEAdditionalFunctionality(
 			registrysendfd.NewNetworkServiceEndpointRegistryClient(),
 		),
+		registryclient.WithAuthorizeNSERegistryClient(registryauthorize.NewNetworkServiceEndpointRegistryClient()),
 	)
 	nse := &registryapi.NetworkServiceEndpoint{
 		Name:                 config.Name,
@@ -341,7 +344,7 @@ func main() {
 	// ********************************************************************************
 	log.FromContext(ctx).Infof("executing phase 7: register nse with nsm")
 	// ********************************************************************************
-	err = registerEndpoint(ctx, config, tlsClientConfig, listenOn.String())
+	err = registerEndpoint(ctx, config, source, tlsClientConfig, listenOn.String())
 	if err != nil {
 		log.FromContext(ctx).Fatalf("failed to connect to registry: %+v", err)
 	}
