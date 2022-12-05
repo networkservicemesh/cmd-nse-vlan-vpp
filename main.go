@@ -51,7 +51,7 @@ import (
 	"github.com/networkservicemesh/api/pkg/api/networkservice"
 	kernelmech "github.com/networkservicemesh/api/pkg/api/networkservice/mechanisms/kernel"
 	registryapi "github.com/networkservicemesh/api/pkg/api/registry"
-	"github.com/networkservicemesh/sdk-sriov/pkg/networkservice/common/token"
+	sriovtoken "github.com/networkservicemesh/sdk-sriov/pkg/networkservice/common/token"
 	"github.com/networkservicemesh/sdk-sriov/pkg/tools/tokens"
 	"github.com/networkservicemesh/sdk/pkg/networkservice/chains/endpoint"
 	"github.com/networkservicemesh/sdk/pkg/networkservice/common/authorize"
@@ -74,6 +74,7 @@ import (
 	"github.com/networkservicemesh/sdk/pkg/tools/log/logruslogger"
 	"github.com/networkservicemesh/sdk/pkg/tools/opentelemetry"
 	"github.com/networkservicemesh/sdk/pkg/tools/spiffejwt"
+	"github.com/networkservicemesh/sdk/pkg/tools/token"
 	"github.com/networkservicemesh/sdk/pkg/tools/tracing"
 
 	"github.com/networkservicemesh/cmd-nse-vlan-vpp/pkg/networkservice/ifconfig"
@@ -365,7 +366,7 @@ func getSriovTokenVlanServerChainElement(tokenKey string) (tokenServer networkse
 	} else {
 		tokenServer = chain.NewNetworkServiceServer(
 			vlan.NewServer(),
-			token.NewServer(tokenKey))
+			sriovtoken.NewServer(tokenKey))
 	}
 	return
 }
