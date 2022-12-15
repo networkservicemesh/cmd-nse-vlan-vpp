@@ -219,8 +219,8 @@ github.com/networkservicemesh/api v1.7.0-rc.2 h1:gFIQnzm2gjXM6E/Rk3to95I1A12XAH2
 github.com/networkservicemesh/api v1.7.0-rc.2/go.mod h1:hOF2844BSstH1311oDMDgqqXS+kdc77htZNPRKl9mf8=
 github.com/networkservicemesh/sdk v1.7.0-rc.2 h1:79znxDESsnluwD2TzpfNp7pu4sQwNuUdOWtwoPqEqrg=
 github.com/networkservicemesh/sdk v1.7.0-rc.2/go.mod h1:I1RVfEn6kFS0rugVgRVztiX3hub/HL6ccJOhDa2vXoU=
-github.com/networkservicemesh/sdk-sriov v0.0.0-20221215120515-abdce7f4946e h1:/52uv4biFpEPkUgRQnOEqDQAxyfr3Y3sEUVZ1ntjg4Y=
-github.com/networkservicemesh/sdk-sriov v0.0.0-20221215120515-abdce7f4946e/go.mod h1:u7Bx4GZyZ9bIDx8EMp8LurdbfdtGVGM8Czk+1AKRUic=
+github.com/networkservicemesh/sdk-sriov v1.7.0-rc.2 h1:udsI8U0wJmAg80QkMiX0Kw73XMWUmdBS8Xhx8Qak8Oo=
+github.com/networkservicemesh/sdk-sriov v1.7.0-rc.2/go.mod h1:95Vz17GmRCPjdu13oENkxbgrZwxOelb8xuTBmyAGeDo=
 github.com/networkservicemesh/sdk-vpp v1.7.0-rc.2 h1:AYSf7vpqgqzTuqdxpJwW51Z8fGZz/Kgsk/aZpPQGI7Y=
 github.com/networkservicemesh/sdk-vpp v1.7.0-rc.2/go.mod h1:t8z/krOwUo5yhgAwoYNC1c/n542NpwCekf0u09F8/y4=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
