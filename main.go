@@ -86,18 +86,19 @@ const (
 
 // Config holds configuration parameters from environment variables
 type Config struct {
-	Name                  string            `default:"vlan-vpp-responder" desc:"Name of vlan vpp responder"`
-	BaseDir               string            `default:"./" desc:"base directory" split_words:"true"`
-	ConnectTo             url.URL           `default:"unix:///var/lib/networkservicemesh/nsm.io.sock" desc:"url to connect to" split_words:"true"`
-	MaxTokenLifetime      time.Duration     `default:"10m" desc:"maximum lifetime of tokens" split_words:"true"`
-	ServiceNames          []string          `default:"vlan-vpp-responder" desc:"Name of provided services" split_words:"true"`
-	Payload               string            `default:"ETHERNET" desc:"Name of provided service payload" split_words:"true"`
-	Labels                map[string]string `default:"" desc:"Endpoint labels"`
-	DNSConfigs            dnsconfig.Decoder `default:"[]" desc:"DNSConfigs represents array of DNSConfig in json format. See at model definition: https://github.com/networkservicemesh/api/blob/main/pkg/api/networkservice/connectioncontext.pb.go#L426-L435" split_words:"true"`
-	CidrPrefix            string            `default:"169.254.0.0/16" desc:"CIDR Prefix to assign IPs from" split_words:"true"`
-	IdleTimeout           time.Duration     `default:"0" desc:"timeout for automatic shutdown when there were no requests for specified time. Set 0 to disable auto-shutdown." split_words:"true"`
-	RegisterService       bool              `default:"true" desc:"if true then registers network service on startup" split_words:"true"`
-	OpenTelemetryEndpoint string            `default:"otel-collector.observability.svc.cluster.local:4317" desc:"OpenTelemetry Collector Endpoint"`
+	Name                   string            `default:"vlan-vpp-responder" desc:"Name of vlan vpp responder"`
+	BaseDir                string            `default:"./" desc:"base directory" split_words:"true"`
+	ConnectTo              url.URL           `default:"unix:///var/lib/networkservicemesh/nsm.io.sock" desc:"url to connect to" split_words:"true"`
+	MaxTokenLifetime       time.Duration     `default:"10m" desc:"maximum lifetime of tokens" split_words:"true"`
+	RegistryClientPolicies []string          `default:"etc/nsm/opa/common/.*.rego,etc/nsm/opa/registry/.*.rego,etc/nsm/opa/client/.*.rego" desc:"paths to files and directories that contain registry client policies" split_words:"true"`
+	ServiceNames           []string          `default:"vlan-vpp-responder" desc:"Name of provided services" split_words:"true"`
+	Payload                string            `default:"ETHERNET" desc:"Name of provided service payload" split_words:"true"`
+	Labels                 map[string]string `default:"" desc:"Endpoint labels"`
+	DNSConfigs             dnsconfig.Decoder `default:"[]" desc:"DNSConfigs represents array of DNSConfig in json format. See at model definition: https://github.com/networkservicemesh/api/blob/main/pkg/api/networkservice/connectioncontext.pb.go#L426-L435" split_words:"true"`
+	CidrPrefix             string            `default:"169.254.0.0/16" desc:"CIDR Prefix to assign IPs from" split_words:"true"`
+	IdleTimeout            time.Duration     `default:"0" desc:"timeout for automatic shutdown when there were no requests for specified time. Set 0 to disable auto-shutdown." split_words:"true"`
+	RegisterService        bool              `default:"true" desc:"if true then registers network service on startup" split_words:"true"`
+	OpenTelemetryEndpoint  string            `default:"otel-collector.observability.svc.cluster.local:4317" desc:"OpenTelemetry Collector Endpoint"`
 }
 
 // Process prints and processes env to config
@@ -214,7 +215,9 @@ func registerEndpoint(ctx context.Context, config *Config, source *workloadapi.X
 		registryclient.WithNSEAdditionalFunctionality(
 			registrysendfd.NewNetworkServiceEndpointRegistryClient(),
 		),
-		registryclient.WithAuthorizeNSERegistryClient(registryauthorize.NewNetworkServiceEndpointRegistryClient()),
+		registryclient.WithAuthorizeNSERegistryClient(registryauthorize.NewNetworkServiceEndpointRegistryClient(
+			registryauthorize.WithPolicies(config.RegistryClientPolicies...),
+		)),
 	)
 	nse := &registryapi.NetworkServiceEndpoint{
 		Name:                 config.Name,
