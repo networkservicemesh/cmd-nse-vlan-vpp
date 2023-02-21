@@ -10,8 +10,8 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/networkservicemesh/api v1.7.2-0.20230123083145-4a6c3ec589e1
-	github.com/networkservicemesh/sdk v0.5.1-0.20230213134519-3aa9aa0d5e1b
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20230213142844-2ea338a83e06
+	github.com/networkservicemesh/sdk v0.5.1-0.20230220110548-26b7ec8d44f2
+	github.com/networkservicemesh/sdk-sriov v0.0.0-20230221132402-5b03677ef136
 	github.com/networkservicemesh/sdk-vpp v0.0.0-20230213142924-f83ab06a3e97
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
@@ -28,6 +28,7 @@ require (
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/edwarnicke/exechelper v1.0.2 // indirect
+	github.com/edwarnicke/genericsync v0.0.0-20220910010113-61a344f9bc29 // indirect
 	github.com/edwarnicke/log v1.0.0 // indirect
 	github.com/edwarnicke/serialize v1.0.7 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
