@@ -428,11 +428,10 @@ func (i *ifConfigServer) makeIfOpUp(ctx context.Context, swIfIndex interface_typ
 	return nil
 }
 
+// nolint: revive
 func (i *ifConfigServer) closeLinkSubscribe(done chan struct{}, linkUpdateCh chan netlink.LinkUpdate) {
 	close(done)
 	// `linkUpdateCh` should be fully read after the `done` close to prevent goroutine leak in `netlink.LinkSubscribe`
-	go func() {
-		for range linkUpdateCh {
-		}
-	}()
+	for range linkUpdateCh {
+	}
 }
