@@ -1,4 +1,6 @@
-// Copyright (c) 2021-2022 Nordix Foundation.
+// Copyright (c) 2021-2023 Nordix Foundation.
+//
+// Copyright (c) 2023 Cisco Foundation.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -27,7 +29,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
@@ -335,7 +336,7 @@ func main() {
 	// ********************************************************************************
 
 	server := registerGRPCServer(tlsServerConfig, &responderEndpoint)
-	tmpDir, err := ioutil.TempDir("", config.Name)
+	tmpDir, err := os.MkdirTemp("", config.Name)
 	if err != nil {
 		logrus.Fatalf("error creating tmpDir %+v", err)
 	}

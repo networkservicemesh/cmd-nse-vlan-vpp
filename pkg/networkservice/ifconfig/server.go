@@ -1,5 +1,7 @@
 // Copyright (c) 2021-2022 Nordix Foundation.
 //
+// Copyright (c) 2023 Cisco Foundation.
+//
 // SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,16 +27,17 @@ import (
 	"net"
 	"sync"
 
-	"github.com/edwarnicke/govpp/binapi/af_packet"
-	"github.com/edwarnicke/govpp/binapi/fib_types"
-	interfaces "github.com/edwarnicke/govpp/binapi/interface"
-	"github.com/edwarnicke/govpp/binapi/interface_types"
-	"github.com/edwarnicke/govpp/binapi/ip"
-	"github.com/edwarnicke/govpp/binapi/rdma"
 	"github.com/edwarnicke/vpphelper"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/vishvananda/netlink"
+
+	"github.com/networkservicemesh/govpp/binapi/af_packet"
+	"github.com/networkservicemesh/govpp/binapi/fib_types"
+	interfaces "github.com/networkservicemesh/govpp/binapi/interface"
+	"github.com/networkservicemesh/govpp/binapi/interface_types"
+	"github.com/networkservicemesh/govpp/binapi/ip"
+	"github.com/networkservicemesh/govpp/binapi/rdma"
 
 	"github.com/networkservicemesh/api/pkg/api/networkservice"
 	"github.com/networkservicemesh/api/pkg/api/networkservice/mechanisms/kernel"
@@ -425,11 +428,10 @@ func (i *ifConfigServer) makeIfOpUp(ctx context.Context, swIfIndex interface_typ
 	return nil
 }
 
+// nolint: revive
 func (i *ifConfigServer) closeLinkSubscribe(done chan struct{}, linkUpdateCh chan netlink.LinkUpdate) {
 	close(done)
 	// `linkUpdateCh` should be fully read after the `done` close to prevent goroutine leak in `netlink.LinkSubscribe`
-	go func() {
-		for range linkUpdateCh {
-		}
-	}()
+	for range linkUpdateCh {
+	}
 }
