@@ -1,5 +1,7 @@
 // Copyright (c) 2021-2022 Nordix Foundation.
 //
+// Copyright (c) 2023 Cisco Foundation.
+//
 // SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,14 +29,15 @@ import (
 
 	"github.com/edwarnicke/vpphelper"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/pkg/errors"
+	"github.com/vishvananda/netlink"
+
 	"github.com/networkservicemesh/govpp/binapi/af_packet"
 	"github.com/networkservicemesh/govpp/binapi/fib_types"
 	interfaces "github.com/networkservicemesh/govpp/binapi/interface"
 	"github.com/networkservicemesh/govpp/binapi/interface_types"
 	"github.com/networkservicemesh/govpp/binapi/ip"
 	"github.com/networkservicemesh/govpp/binapi/rdma"
-	"github.com/pkg/errors"
-	"github.com/vishvananda/netlink"
 
 	"github.com/networkservicemesh/api/pkg/api/networkservice"
 	"github.com/networkservicemesh/api/pkg/api/networkservice/mechanisms/kernel"
