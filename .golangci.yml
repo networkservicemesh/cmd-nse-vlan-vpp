@@ -169,3 +169,7 @@ issues:
       linters:
         - revive
       text: 'package-comments: should have a package comment'
+    - path: 'pkg/networkservice/ifconfig/server.go'
+      linters:
+        - revive
+      text: 'Function "closeLinkSubscribe"'
