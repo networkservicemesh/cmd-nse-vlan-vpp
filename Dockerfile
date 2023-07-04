@@ -1,5 +1,5 @@
-ARG VPP_VERSION=v23.02-rc0-189-g0359d19f2
-FROM ghcr.io/edwarnicke/govpp/vpp:${VPP_VERSION} as go
+ARG VPP_VERSION=v23.02-rc0-189-gb53439efb
+FROM ghcr.io/networkservicemesh/govpp/vpp:${VPP_VERSION} as go
 COPY --from=golang:1.20.5-buster /usr/local/go/ /go
 ENV PATH ${PATH}:/go/bin
 ENV GO111MODULE=on
@@ -23,6 +23,6 @@ CMD go test -test.v ./...
 FROM test as debug
 CMD dlv -l :40000 --headless=true --api-version=2 test -test.v ./...
 
-FROM ghcr.io/edwarnicke/govpp/vpp:${VPP_VERSION} as runtime
+FROM ghcr.io/networkservicemesh/govpp/vpp:${VPP_VERSION} as runtime
 COPY --from=build /bin/nse-vlan-vpp /bin/nse-vlan-vpp
 ENTRYPOINT ["/bin/nse-vlan-vpp"]
