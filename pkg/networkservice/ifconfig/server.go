@@ -27,10 +27,11 @@ import (
 	"net"
 	"sync"
 
-	"github.com/edwarnicke/vpphelper"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/vishvananda/netlink"
+
+	"github.com/networkservicemesh/vpphelper"
 
 	"github.com/networkservicemesh/govpp/binapi/af_packet"
 	"github.com/networkservicemesh/govpp/binapi/fib_types"

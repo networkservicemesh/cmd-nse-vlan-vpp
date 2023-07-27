@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/edwarnicke/grpcfd v1.1.2
-	github.com/edwarnicke/vpphelper v0.2.0
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/networkservicemesh/api v1.9.1-0.20230627143611-9785eacf9687
@@ -13,6 +12,7 @@ require (
 	github.com/networkservicemesh/sdk v0.5.1-0.20230713084322-eaf1d25c7512
 	github.com/networkservicemesh/sdk-sriov v0.0.0-20230714102638-b47a7bbbf12e
 	github.com/networkservicemesh/sdk-vpp v0.0.0-20230714110741-f407de38212f
+	github.com/networkservicemesh/vpphelper v0.0.0-20230721124411-38a0b7426972
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spiffe/go-spiffe/v2 v2.0.0
