@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/networkservicemesh/api v1.10.1-0.20230822145124-c4a3ece88804
-	github.com/networkservicemesh/govpp v0.0.0-20230630105900-092690d52a97
+	github.com/networkservicemesh/govpp v0.0.0-20230901132304-614d6d6fb8a6
 	github.com/networkservicemesh/sdk v0.5.1-0.20230828163119-f96fdf637a63
 	github.com/networkservicemesh/sdk-sriov v0.0.0-20230829144925-c1cdd8829c84
 	github.com/networkservicemesh/sdk-vpp v0.0.0-20230829144755-51305e3ca61e
@@ -51,6 +51,7 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	github.com/zeebo/errs v1.2.2 // indirect
+	go.fd.io/govpp v0.8.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0 // indirect
 	go.opentelemetry.io/otel v1.16.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.16.0 // indirect
