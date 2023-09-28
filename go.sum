@@ -148,12 +148,12 @@ github.com/networkservicemesh/api v1.10.1-0.20230822145124-c4a3ece88804 h1:RDbdW
 github.com/networkservicemesh/api v1.10.1-0.20230822145124-c4a3ece88804/go.mod h1:DO7D13Y4x/A8tQ2cQyUWa9o5wi7XHUB8+vITWRKreCc=
 github.com/networkservicemesh/govpp v0.0.0-20230922102554-a46e6ced9b14 h1:BlBHDA3mmLDAfbzo3iR8gx2Av9TP7hhpHa7CF/q+WoU=
 github.com/networkservicemesh/govpp v0.0.0-20230922102554-a46e6ced9b14/go.mod h1:uTpdzM7rhTAJG86sjt3dQcHVABUgohuZCAyGWX5Rfmo=
-github.com/networkservicemesh/sdk v0.5.1-0.20230922100610-97bacd7153a2 h1:zucewg+R+ik42Nc2r0MaUzz8kuGh4cJNZU1UqSbmQR0=
-github.com/networkservicemesh/sdk v0.5.1-0.20230922100610-97bacd7153a2/go.mod h1:KzbOZkk84r6KMNESKb50DpIWqxqCA88Mb+2jFrAdBJs=
+github.com/networkservicemesh/sdk v0.5.1-0.20230928095228-256d2ccfaf72 h1:kHxDNU5ePuHH7MZceMc1G3dAZueUk1gSu3Rb5fhvFf4=
+github.com/networkservicemesh/sdk v0.5.1-0.20230928095228-256d2ccfaf72/go.mod h1:KzbOZkk84r6KMNESKb50DpIWqxqCA88Mb+2jFrAdBJs=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20230928095623-2edf06ff05f6 h1:+PXWDg8w6jqnM05Qgu5nXSJ+VvkOybeY16aMylv87wA=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20230928095623-2edf06ff05f6/go.mod h1:gDrqwgHwzjfpRj3DiLOGv2JGpDzToCCkr7KniyZ5Naw=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20230928095101-07677ae296e2 h1:BIxuqh9olAAUkWlm6+UJownO1P0QNtDnjpzBEqWqxtI=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20230928095101-07677ae296e2/go.mod h1:K2XS8LchbkmC63zvEvYRGoupcfBrkRPPGD/SOGW1s4U=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20230928100050-57791c4f556c h1:LXyNO03nHCqLUN16OwtV756+Tw/wUeJ/V270f9zWDfA=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20230928100050-57791c4f556c/go.mod h1:JEg5HYBjhstUsMMEyV5at31khNI1gxtyuV6qZTrx9pI=
 github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb h1:SETtZ12eYPkUGafW1DwGb8kSOR8O4OniSuZnqn2bOOw=
 github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb/go.mod h1:gHuTaUs1uFvyOY0Cy9DXvyAR2MtwmlPD2NTyYfr6kLc=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
