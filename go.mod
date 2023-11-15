@@ -9,8 +9,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/networkservicemesh/api v1.11.1-0.20231031152153-730abd666985
 	github.com/networkservicemesh/govpp v0.0.0-20231108193829-2484aa7cd5d9
-	github.com/networkservicemesh/sdk v0.5.1-0.20231114141517-70f3d8880671
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20231114142221-296e71a0be5a
+	github.com/networkservicemesh/sdk v0.5.1-0.20231115135824-7e78948c1d57
+	github.com/networkservicemesh/sdk-sriov v0.0.0-20231115140431-9c748414f267
 	github.com/networkservicemesh/sdk-vpp v0.0.0-20231110201238-14b666f1ea52
 	github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb
 	github.com/pkg/errors v0.9.1
@@ -74,7 +74,7 @@ require (
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/sys v0.14.1-0.20231113162313-11eadc05e9bf // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.9.3 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231012201019-e917dd12ba7a // indirect
