@@ -145,12 +145,12 @@ github.com/networkservicemesh/api v1.11.1-0.20231031152153-730abd666985 h1:uiWxB
 github.com/networkservicemesh/api v1.11.1-0.20231031152153-730abd666985/go.mod h1:E2yBac48+mMkMh6ODnsNyah4EE6rI08SMR9n+86Emxs=
 github.com/networkservicemesh/govpp v0.0.0-20231108193829-2484aa7cd5d9 h1:f6WdRqdJCz7iCOHcgOY2BXURz/j8iS7Y21ss9VCp7w4=
 github.com/networkservicemesh/govpp v0.0.0-20231108193829-2484aa7cd5d9/go.mod h1:uTpdzM7rhTAJG86sjt3dQcHVABUgohuZCAyGWX5Rfmo=
-github.com/networkservicemesh/sdk v0.5.1-0.20231114141517-70f3d8880671 h1:uxIx9jdRLQ3GdtmY2OUfcRrVSJhS3nQ5k3lz+cJ6Vcw=
-github.com/networkservicemesh/sdk v0.5.1-0.20231114141517-70f3d8880671/go.mod h1:+XGoJoPcS7UB+aUjWwfgJySEhJtlXo6H0zyR2oMHSvc=
+github.com/networkservicemesh/sdk v0.5.1-0.20231115135824-7e78948c1d57 h1:fgAvwHchbdxQZTEbaeQBsz260uCCs2tZCET9F0q6zvI=
+github.com/networkservicemesh/sdk v0.5.1-0.20231115135824-7e78948c1d57/go.mod h1:t0gOsubf+efkL9Ncy3+PvVKfr/xMGP0tA8HlFFJYz/s=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20231114142221-296e71a0be5a h1:3ZMySn9DtzqgrK7UpTQbzhD6ZPW+p6rGYrr1UaSKngk=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20231114142221-296e71a0be5a/go.mod h1:B1ztLkDxxGC58P07M+cjG85+bm0IWhLuLjZEnl33kGs=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20231110201238-14b666f1ea52 h1:OSODr0+AUbIPcmGDQ9uwb+9Goc6KWgMeOngUWL0ixJY=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20231110201238-14b666f1ea52/go.mod h1:tqV0tz9TTdooqQgBzE5FO7sMfF7lHf0LL4ZidARW4M8=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20231115140556-e7c0a9f95366 h1:P2EjK8iEI6lVJ33QLOWHLW1jBGLP7EAhS7KICYBug18=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20231115140556-e7c0a9f95366/go.mod h1:oSVCiqwrpx3UKv9wTi32n8CHkVQaq1iuZgzZDE6AmzM=
 github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb h1:SETtZ12eYPkUGafW1DwGb8kSOR8O4OniSuZnqn2bOOw=
 github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb/go.mod h1:gHuTaUs1uFvyOY0Cy9DXvyAR2MtwmlPD2NTyYfr6kLc=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
@@ -326,8 +326,8 @@ golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.1.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
-golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+golang.org/x/sys v0.14.1-0.20231113162313-11eadc05e9bf h1:deuYF+UqKuU1sIonGbTXrdnTWUeMsYydHZY1w1FGHIg=
+golang.org/x/sys v0.14.1-0.20231113162313-11eadc05e9bf/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/term v0.5.0/go.mod h1:jMB1sMXY+tzblOD4FWmEbocvup2/aLOaQEp7JmGp78k=
