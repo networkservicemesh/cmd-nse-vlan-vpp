@@ -10,7 +10,7 @@ require (
 	github.com/networkservicemesh/api v1.11.2-rc.2
 	github.com/networkservicemesh/govpp v0.0.0-20231108193829-2484aa7cd5d9
 	github.com/networkservicemesh/sdk v1.11.2-rc.2
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20231128121310-b0e19cbc17b7
+	github.com/networkservicemesh/sdk-sriov v1.11.2-rc.2
 	github.com/networkservicemesh/sdk-vpp v1.11.2-rc.2
 	github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb
 	github.com/pkg/errors v0.9.1
@@ -21,7 +21,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
