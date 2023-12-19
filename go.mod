@@ -7,11 +7,11 @@ require (
 	github.com/edwarnicke/grpcfd v1.1.2
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/networkservicemesh/api v1.11.1-0.20231031152153-730abd666985
-	github.com/networkservicemesh/govpp v0.0.0-20231216233431-9c82b2963820
-	github.com/networkservicemesh/sdk v0.5.1-0.20231212103212-1979cc1d932c
+	github.com/networkservicemesh/api v1.11.2
+	github.com/networkservicemesh/govpp v0.0.0-20231212083525-5ecb386aa377
+	github.com/networkservicemesh/sdk v1.11.2
 	github.com/networkservicemesh/sdk-sriov v0.0.0-20231212103852-8e2faf058288
-	github.com/networkservicemesh/sdk-vpp v0.0.0-20231217005351-c801a6bf9d2d
+	github.com/networkservicemesh/sdk-vpp v1.11.2
 	github.com/networkservicemesh/vpphelper v0.0.0-20230901145133-a14aecebd1cb
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
@@ -77,7 +77,7 @@ require (
 	golang.org/x/sys v0.14.1-0.20231113162313-11eadc05e9bf // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.9.3 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20231012201019-e917dd12ba7a // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
