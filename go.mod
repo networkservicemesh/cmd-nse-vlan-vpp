@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/networkservicemesh/api v1.11.2
-	github.com/networkservicemesh/govpp v0.0.0-20231212083525-5ecb386aa377
+	github.com/networkservicemesh/govpp v0.0.0-20231216233431-9c82b2963820
 	github.com/networkservicemesh/sdk v1.11.2
 	github.com/networkservicemesh/sdk-sriov v0.0.0-20231212103852-8e2faf058288
 	github.com/networkservicemesh/sdk-vpp v1.11.2
