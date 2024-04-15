@@ -7,10 +7,10 @@ require (
 	github.com/edwarnicke/grpcfd v1.1.2
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/networkservicemesh/api v1.12.1-rc.1.0.20240325104451-92facbceb926
+	github.com/networkservicemesh/api v1.13.1-0.20240411170402-f357d8c715a2
 	github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba
-	github.com/networkservicemesh/sdk v0.5.1-0.20240411170628-889386da5699
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20240405104034-4c48ca37f7ee
+	github.com/networkservicemesh/sdk v0.5.1-0.20240415093720-3eafbf6156d7
+	github.com/networkservicemesh/sdk-sriov v0.0.0-20240415094843-c4bb53f2e668
 	github.com/networkservicemesh/sdk-vpp v0.0.0-20240411170841-6b6d4026f3b8
 	github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6
 	github.com/pkg/errors v0.9.1
