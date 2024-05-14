@@ -16,6 +16,25 @@ You can build the docker container by running:
 docker build .
 ```
 
+# Usage
+
+## Environment config
+
+* `NSM_NAME`                     - Name of vlan vpp responder (default: "vlan-vpp-responder")
+* `NSM_BASE_DIR`                 - base directory (default: "./")
+* `NSM_CONNECT_TO`               - url to connect to (default: "unix:///var/lib/networkservicemesh/nsm.io.sock")
+* `NSM_MAX_TOKEN_LIFETIME`       - maximum lifetime of tokens (default: "10m")
+* `NSM_REGISTRY_CLIENT_POLICIES` - paths to files and directories that contain registry client policies (default: "etc/nsm/opa/common/.*.rego,etc/nsm/opa/registry/.*.rego,etc/nsm/opa/client/.*.rego")
+* `NSM_SERVICE_NAMES`            - Name of provided services (default: "vlan-vpp-responder")
+* `NSM_PAYLOAD`                  - Name of provided service payload (default: "ETHERNET")
+* `NSM_LABELS`                   - Endpoint labels
+* `NSM_DNS_CONFIGS`              - DNSConfigs represents array of DNSConfig in json format. See at model definition: https://github.com/networkservicemesh/api/blob/main/pkg/api/networkservice/connectioncontext.pb.go#L426-L435 (default: "[]")
+* `NSM_CIDR_PREFIX`              - CIDR Prefix to assign IPs from (default: "169.254.0.0/16")
+* `NSM_IDLE_TIMEOUT`             - timeout for automatic shutdown when there were no requests for specified time. Set 0 to disable auto-shutdown. (default: "0")
+* `NSM_REGISTER_SERVICE`         - if true then registers network service on startup (default: "true")
+* `NSM_OPEN_TELEMETRY_ENDPOINT`  - OpenTelemetry Collector Endpoint (default: "otel-collector.observability.svc.cluster.local:4317")
+* `NSM_METRICS_EXPORT_INTERVAL`  - interval between mertics exports (default: "10s")
+
 # Testing
 
 ## Testing Docker container
