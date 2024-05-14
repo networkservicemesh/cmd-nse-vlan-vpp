@@ -11,7 +11,7 @@ require (
 	github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba
 	github.com/networkservicemesh/sdk v0.5.1-0.20240514143502-1cbc04161aa1
 	github.com/networkservicemesh/sdk-sriov v0.0.0-20240514150857-a42297571919
-	github.com/networkservicemesh/sdk-vpp v0.0.0-20240425185602-653415d26b8f
+	github.com/networkservicemesh/sdk-vpp v0.0.0-20240514151051-8c8e463f81fd
 	github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
