@@ -4,13 +4,13 @@ go 1.20
 
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
-	github.com/edwarnicke/grpcfd v1.1.2
+	github.com/edwarnicke/grpcfd v1.1.4
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/networkservicemesh/api v1.13.1-0.20240424210452-d0df98851760
 	github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba
-	github.com/networkservicemesh/sdk v0.5.1-0.20240529105330-c01f9e100851
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20240529105909-c76bb0360fa8
+	github.com/networkservicemesh/sdk v0.5.1-0.20240604143537-e3eed82dc1b4
+	github.com/networkservicemesh/sdk-sriov v0.0.0-20240604151757-638465e38b8e
 	github.com/networkservicemesh/sdk-vpp v0.0.0-20240529105924-345d2cefa1ba
 	github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6
 	github.com/pkg/errors v0.9.1
