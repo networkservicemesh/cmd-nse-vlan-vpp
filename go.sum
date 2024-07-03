@@ -116,12 +116,12 @@ github.com/networkservicemesh/api v1.13.1-0.20240424210452-d0df98851760 h1:EaWGg
 github.com/networkservicemesh/api v1.13.1-0.20240424210452-d0df98851760/go.mod h1:B8FmS3XZ7NZY7ZEtdcNg2NHYppDHlr4kl4eecdZN9eI=
 github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba h1:7B6X6N7rwJNpnfsUlBavxuZdYqTx8nAKwxVS/AkuX1o=
 github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba/go.mod h1:CwikXQ3p/y3j6+HbQQWXKv0f4LPyUd2vKTiViG93qWA=
-github.com/networkservicemesh/sdk v0.5.1-0.20240703140201-bf440a38808c h1:bCnySQ3IThwgaFMHYJZsQdGLFAfJaFKmIy1q3uY2+Bo=
-github.com/networkservicemesh/sdk v0.5.1-0.20240703140201-bf440a38808c/go.mod h1:soFR6Mg5LTVvEI0zXNcbWoBnn4hqUK7ItZBQJ3Jbszo=
+github.com/networkservicemesh/sdk v0.5.1-0.20240703140424-21369bd95508 h1:m7dFb0nigIkTuE1KYf48b9k5Glb5SDhan+Ew5TpvMUc=
+github.com/networkservicemesh/sdk v0.5.1-0.20240703140424-21369bd95508/go.mod h1:soFR6Mg5LTVvEI0zXNcbWoBnn4hqUK7ItZBQJ3Jbszo=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20240703141022-ae1fe8a64ab6 h1:O5+dKALtgQ/X+wM1Gw6jSwhNWs+w89tdOiuOFPDml8s=
 github.com/networkservicemesh/sdk-sriov v0.0.0-20240703141022-ae1fe8a64ab6/go.mod h1:Fw7XvD6q2OiZZ8Kba0pq0eSrQELY+3tKk+G4vo02724=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20240529105924-345d2cefa1ba h1:HHsEqqE2C2E3w8xW/5uPghMUfadagx3VMrr3WL04sNg=
-github.com/networkservicemesh/sdk-vpp v0.0.0-20240529105924-345d2cefa1ba/go.mod h1:WHsLMIII54qCKVSqw3mBSYKsXIygv7Q9gmCfwn7vrCk=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20240703141212-506bceb978a8 h1:PTS506jt8phk7Zq38g/rAlc5TNIbZf1GrBXXsjfPTxE=
+github.com/networkservicemesh/sdk-vpp v0.0.0-20240703141212-506bceb978a8/go.mod h1:CFvHtsemx9q0oIAYV0uNIyyVYx9doQpcAjVOo/acBEU=
 github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6 h1:o+enN5yCikNXZN+hO+JjE+aLxBWq9+GMVF9GSQtpwMI=
 github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6/go.mod h1:n6+8PnoDvWj6WMryfU3J8HOCusgysFjQ0kGLfrcsDEM=
 github.com/onsi/gomega v1.30.0 h1:hvMK7xYz4D3HapigLTeGdId/NcfQx1VHMJc60ew99+8=
