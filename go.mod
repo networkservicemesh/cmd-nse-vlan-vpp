@@ -7,16 +7,16 @@ require (
 	github.com/edwarnicke/grpcfd v1.1.4
 	github.com/golang/protobuf v1.5.3
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/networkservicemesh/api v1.13.4-0.20240815101554-fdbfcd84fd0e
+	github.com/networkservicemesh/api v1.14.1-rc.1
 	github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba
-	github.com/networkservicemesh/sdk v0.5.1-0.20241001095203-5a9d3ce12c18
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20241001095800-9c3275af6b66
-	github.com/networkservicemesh/sdk-vpp v0.0.0-20241001100007-e833bac64e90
+	github.com/networkservicemesh/sdk v1.14.1-rc.1
+	github.com/networkservicemesh/sdk-sriov v1.14.1-rc.1
+	github.com/networkservicemesh/sdk-vpp v1.14.1-rc.1
 	github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spiffe/go-spiffe/v2 v2.1.7
-	github.com/vishvananda/netlink v1.2.1-beta.2.0.20220630165224-c591ada0fb2b
+	github.com/vishvananda/netlink v1.3.0
 	google.golang.org/grpc v1.60.1
 )
 
