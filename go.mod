@@ -10,8 +10,8 @@ require (
 	github.com/networkservicemesh/api v1.13.4-0.20240815101554-fdbfcd84fd0e
 	github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba
 	github.com/networkservicemesh/sdk v0.5.1-0.20241017234257-9a6b64bb5f81
-	github.com/networkservicemesh/sdk-sriov v0.0.0-20241017234921-a55e390dca7b
-	github.com/networkservicemesh/sdk-vpp v0.0.0-20241017172132-ecedd0a685d5
+	github.com/networkservicemesh/sdk-sriov v0.0.0-20241017172056-3a8c515dbfac
+	github.com/networkservicemesh/sdk-vpp v0.0.0-20241017234840-f8b5d51c3971
 	github.com/networkservicemesh/vpphelper v0.0.0-20240115135903-e2b961f768b6
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
