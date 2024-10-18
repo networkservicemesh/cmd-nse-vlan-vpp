@@ -1,6 +1,6 @@
 // Copyright (c) 2021-2022 Nordix Foundation.
 //
-// Copyright (c) 2023 Cisco Foundation.
+// Copyright (c) 2023-2024 Cisco Foundation.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
