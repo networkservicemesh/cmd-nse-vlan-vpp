@@ -47,6 +47,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/spiffetls/tlsconfig"
 	"github.com/spiffe/go-spiffe/v2/svid/x509svid"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"go.fd.io/govpp/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -134,7 +135,7 @@ func logPhases(ctx context.Context) {
 	log.FromContext(ctx).Infof("a final success message with start time duration")
 }
 
-func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Config, vppConn vpphelper.Connection, ipnet *net.IPNet, cancel context.CancelFunc) (endpoint.Endpoint, ifconfig.Server) {
+func createNSEndpoint(ctx context.Context, source x509svid.Source, config *Config, vppConn api.Connection, ipnet *net.IPNet, cancel context.CancelFunc) (endpoint.Endpoint, ifconfig.Server) {
 	sriovTokenVlanServer := getSriovTokenVlanServerChainElement(getTokenKey(ctx, tokens.FromEnv(os.Environ())))
 	parentIfName := getParentIfname(config.Name)
 	ifConfigServer := ifconfig.NewServer(ctx, parentIfName, vppConn)

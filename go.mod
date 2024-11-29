@@ -17,6 +17,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spiffe/go-spiffe/v2 v2.1.7
 	github.com/vishvananda/netlink v1.3.1-0.20240922070040-084abd93d350
+	go.fd.io/govpp v0.10.0-alpha.0.20240110141843-761adec77524
 	google.golang.org/grpc v1.60.1
 )
 
@@ -60,7 +61,6 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	github.com/zeebo/errs v1.3.0 // indirect
-	go.fd.io/govpp v0.10.0-alpha.0.20240110141843-761adec77524 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.0 // indirect
 	go.opentelemetry.io/otel v1.20.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.43.0 // indirect
