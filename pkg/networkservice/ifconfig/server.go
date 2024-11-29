@@ -1,6 +1,6 @@
 // Copyright (c) 2021-2022 Nordix Foundation.
 //
-// Copyright (c) 2023 Cisco Foundation.
+// Copyright (c) 2023-2024 Cisco Foundation.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -30,8 +30,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/vishvananda/netlink"
-
-	"github.com/networkservicemesh/vpphelper"
+	"go.fd.io/govpp/api"
 
 	"github.com/networkservicemesh/govpp/binapi/af_packet"
 	"github.com/networkservicemesh/govpp/binapi/fib_types"
@@ -65,7 +64,7 @@ type ifConfigServer struct {
 	stop            chan interface{}
 	parentIfName    string
 	swIfIndexesMap  map[string]interface_types.InterfaceIndex
-	vppConn         vpphelper.Connection
+	vppConn         api.Connection
 	clientsRefCount int
 	connections     map[string]interface{}
 	mutex           sync.Mutex
@@ -78,7 +77,7 @@ type Server interface {
 }
 
 // NewServer creates new ifconfig server instance
-func NewServer(ctx context.Context, parentIfName string, vppConn vpphelper.Connection) Server {
+func NewServer(ctx context.Context, parentIfName string, vppConn api.Connection) Server {
 	ifServer := &ifConfigServer{ifCtx: ctx, parentIfName: parentIfName, ifOps: make(chan ifOp, bufSize),
 		swIfIndexesMap: make(map[string]interface_types.InterfaceIndex), stop: make(chan interface{}),
 		vppConn: vppConn, connections: make(map[string]interface{})}
