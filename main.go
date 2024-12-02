@@ -52,6 +52,7 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/networkservicemesh/vpphelper"
+	"github.com/networkservicemesh/vpphelper/extendtimeout"
 
 	"github.com/networkservicemesh/api/pkg/api/networkservice"
 	kernelmech "github.com/networkservicemesh/api/pkg/api/networkservice/mechanisms/kernel"
@@ -108,6 +109,7 @@ type Config struct {
 	MetricsExportInterval  time.Duration     `default:"10s" desc:"interval between mertics exports" split_words:"true"`
 	PprofEnabled           bool              `default:"false" desc:"is pprof enabled" split_words:"true"`
 	PprofListenOn          string            `default:"localhost:6060" desc:"pprof URL to ListenAndServe" split_words:"true"`
+	VPPMinOperationTimeout time.Duration     `default:"2s" desc:"minimum timeout for every vpp operation" split_words:"true"`
 }
 
 // Process prints and processes env to config
@@ -316,6 +318,7 @@ func main() {
 	// ********************************************************************************
 	vppConn, vppErrCh := vpphelper.StartAndDialContext(ctx)
 	exitOnErr(ctx, cancel, vppErrCh)
+	vppConn = extendtimeout.NewConnection(vppConn, config.VPPMinOperationTimeout)
 
 	// ********************************************************************************
 	log.FromContext(ctx).Infof("executing phase 3: retrieving svid, check spire agent logs if this is the last line you see")
