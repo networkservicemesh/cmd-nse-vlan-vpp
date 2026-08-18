@@ -125,8 +125,8 @@ github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba h1:7B6X6N
 github.com/networkservicemesh/govpp v0.0.0-20240328101142-8a444680fbba/go.mod h1:CwikXQ3p/y3j6+HbQQWXKv0f4LPyUd2vKTiViG93qWA=
 github.com/networkservicemesh/sdk v0.5.1-0.20260407081414-9ac672ca128d h1:uDqLW3o41dDdOd1nyT08Mu860cwQr2pMoyFAwEbKlL8=
 github.com/networkservicemesh/sdk v0.5.1-0.20260407081414-9ac672ca128d/go.mod h1:VAFz8bh26wuHPP78OjtmlJuCmlfAeyWGGzTPnhLOxxc=
-github.com/networkservicemesh/sdk-sriov v0.0.0-20260407082104-8dcf72c1303f h1:q9+7OGGrTmu+sbbRlzIeAoKWpvKHIX4riUbR7bEyK1s=
-github.com/networkservicemesh/sdk-sriov v0.0.0-20260407082104-8dcf72c1303f/go.mod h1:bLCsRGOTyHsDsIa9AxDetW2CRV73vjLCVXJg3gNBEgM=
+github.com/networkservicemesh/sdk-sriov v0.0.0-20260817132431-fefd46d691ab h1:m7yJVMyg2gU0Um/FCtVCPnfoRR+OQLQPZFYDjIUAoJk=
+github.com/networkservicemesh/sdk-sriov v0.0.0-20260817132431-fefd46d691ab/go.mod h1:7L1wZVOvLqDdYJlQQsRo63xzbRB4NzDU0jgo5CS4KTc=
 github.com/networkservicemesh/sdk-vpp v0.0.0-20260817132406-1b56cf5c4134 h1:SHi5kxk2IzLGQ8NwN3v8NBl40P4LdqHVVsmzU6/Gmp8=
 github.com/networkservicemesh/sdk-vpp v0.0.0-20260817132406-1b56cf5c4134/go.mod h1:tg87UtD7YsrZgObS9G0CWpjiXhXMVfRt77yTP+Caox0=
 github.com/networkservicemesh/vpphelper v0.0.0-20250204173511-c366e1dc63af h1:xH1C+JjlmM+bFYWczOUaf/QSZAVe4yxGnnals0w1X70=
