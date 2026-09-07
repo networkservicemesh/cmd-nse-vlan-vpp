@@ -17,7 +17,7 @@ require (
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spiffe/go-spiffe/v2 v2.6.0
 	github.com/vishvananda/netlink v1.3.1-0.20240922070040-084abd93d350
-	go.fd.io/govpp v0.13.0
+	go.fd.io/govpp v0.11.0
 	google.golang.org/grpc v1.82.1
 )
 
